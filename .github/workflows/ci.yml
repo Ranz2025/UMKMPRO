@@ -1,0 +1,52 @@
+name: Continuous Integration (CI)
+
+on:
+  push:
+    branches: [ main, staging, "feature/*" ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  backend-tests:
+    name: Backend PHPUnit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo, pdo_sqlite, bcmath
+          coverage: xdebug
+
+      - name: Copy .env
+        run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+        working-directory: ./backend
+
+      - name: Install Dependencies
+        run: composer install --prefer-dist --no-progress
+        working-directory: ./backend
+
+      - name: Run PHPUnit Tests
+        run: ./vendor/bin/phpunit --configuration phpunit.xml
+        working-directory: ./backend
+
+  frontend-build:
+    name: Frontend Vite Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+        working-directory: ./frontend
+
+      - name: Build Frontend
+        run: npm run build
+        working-directory: ./frontend
