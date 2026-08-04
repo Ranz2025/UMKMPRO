@@ -9,8 +9,8 @@ const NAV_LINKS = [
   { href: '#testimonials', label: 'Testimoni' },
 ];
 
-// Placeholder handler untuk link yang belum siap
-function handlePlaceholderClick(e) {
+// Placeholder handler untuk link yang belum siap (reserved untuk penggunaan mendatang)
+function _handlePlaceholderClick(e) {
   e.preventDefault();
   alert('Halaman ini sedang dalam pengembangan.');
 }
@@ -201,7 +201,7 @@ export default function Navbar({ activeSection = 'hero' }) {
                     style={{
                       color: isActive ? 'var(--color-primary)' : 'var(--color-muted-fg)',
                       fontWeight: isActive ? 600 : 500,
-                      display: 'block',
+                      display: 'flex',
                       padding: '8px 14px',
                       borderRadius: '8px',
                       textDecoration: 'none',
@@ -210,7 +210,6 @@ export default function Navbar({ activeSection = 'hero' }) {
                       background: isActive ? 'var(--color-muted)' : 'transparent',
                       transition: 'color 0.15s ease, background 0.15s ease',
                       minHeight: 44,
-                      display: 'flex',
                       alignItems: 'center',
                     }}
                   >

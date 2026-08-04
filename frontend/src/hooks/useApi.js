@@ -10,7 +10,7 @@ export function useApiData(apiFn, initialParams = {}, deps = []) {
   const [error, setError] = useState(null);
   const [meta, setMeta] = useState(null);
   const [params, setParams] = useState(initialParams);
-  const abortRef = useRef(null);
+  const _abortRef = useRef(null);
 
   const fetch = useCallback(async (overrideParams) => {
     setLoading(true);

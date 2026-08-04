@@ -265,14 +265,13 @@ export function AuthCheckbox({ id, checked, onChange, label, error }) {
           <span
             aria-hidden="true"
             style={{
-              display: 'block',
+              display: 'flex',
               width: 20,
               height: 20,
               borderRadius: 'var(--radius-sm, 6px)',
               border: `1.5px solid ${error ? 'var(--color-error, #EF4444)' : checked ? 'var(--color-primary)' : 'var(--color-border)'}`,
               background: checked ? 'var(--color-primary)' : 'var(--color-card)',
               transition: 'background 150ms ease, border-color 150ms ease',
-              display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
             }}
@@ -640,28 +639,31 @@ export default function AuthLayout({ children, title, subtitle }) {
           background: 'var(--color-background)',
         }}
       >
-        {/* Trust-strip ringkas — pengganti panel branding di mobile
-            (dulu hilang total < 768px, kehilangan social proof) */}
-        <div
-          className="auth-mobile-trust"
+        <a
+          href="/"
+          className="auth-mobile-home"
+          aria-label="Kembali ke landing page"
           style={{
             display: 'none',
-            width: '100%',
-            maxWidth: 440,
-            marginBottom: 20,
-            padding: '10px 14px',
-            borderRadius: 'var(--radius-md, 10px)',
-            background: 'color-mix(in srgb, var(--color-primary) 8%, transparent)',
-            border: '1px solid color-mix(in srgb, var(--color-primary) 20%, transparent)',
-            fontSize: 'var(--text-xs, 0.75rem)',
-            color: 'var(--color-muted-fg)',
+            position: 'absolute',
+            top: 18,
+            left: 18,
+            width: 42,
+            height: 42,
+            borderRadius: '50%',
+            border: '1px solid var(--color-border)',
+            background: 'var(--color-card)',
+            color: 'var(--color-foreground)',
+            textDecoration: 'none',
             alignItems: 'center',
-            gap: 6,
+            justifyContent: 'center',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
           }}
         >
-          <strong style={{ color: 'var(--color-foreground)' }}>10.000+ UMKM</strong>
-          <span>sudah pakai UMKMPro · 4.9★ rating</span>
-        </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </a>
 
         {/* Toggle tema */}
         <button
@@ -742,7 +744,8 @@ export default function AuthLayout({ children, title, subtitle }) {
       <style>{`
         @media (max-width: 768px) {
           .auth-brand-panel { display: none !important; }
-          .auth-mobile-trust { display: flex !important; }
+          .auth-mobile-trust { display: none !important; }
+          .auth-mobile-home { display: flex !important; }
           .auth-form-panel { padding: 32px 20px !important; }
         }
 
