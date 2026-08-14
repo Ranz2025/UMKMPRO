@@ -174,7 +174,6 @@ export default function RegisterPage() {
       subtitle="Daftar sekarang. Tidak perlu kartu kredit."
     >
       <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
         <AuthAlert message={serverError} />
 
         <AuthFormField

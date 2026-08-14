@@ -20,9 +20,9 @@ const fmt = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency:
 const EMPTY_FORM = { name: '', sku: '', category_id: '', category_name: '', selling_price: '', cost_price: '', stock: '', min_stock: '10', description: '' };
 
 function StockBadge({ stock, min }) {
-  if (stock <= 0)   return <span style={{ padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>Habis</span>;
-  if (stock <= min) return <span style={{ padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>Menipis ({stock})</span>;
-  return <span style={{ padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, background: 'rgba(16,185,129,0.15)', color: '#10b981' }}>Tersedia ({stock})</span>;
+  if (stock <= 0)   return <span className="status-badge status-badge--danger">Habis</span>;
+  if (stock <= min) return <span className="status-badge status-badge--warning">Menipis ({stock})</span>;
+  return <span className="status-badge status-badge--success">Tersedia ({stock})</span>;
 }
 
 // ── Product Modal (Create / Edit) ─────────────────────────────────
@@ -85,7 +85,7 @@ function ProductModal({ product, categories, onClose, onSaved }) {
         value={form[key]}
         onChange={e => set(key, e.target.value)}
         placeholder={placeholder}
-        style={{ padding: '9px 12px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-muted)', color: 'var(--color-foreground)', fontSize: 14, outline: 'none' }}
+      className="form-input"
         onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
         onBlur={e => e.target.style.borderColor = 'var(--color-border)'}
       />
@@ -93,10 +93,10 @@ function ProductModal({ product, categories, onClose, onSaved }) {
   );
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 300, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
-      <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 20, padding: 28, width: '90%', maxWidth: 520, boxShadow: '0 25px 50px rgba(0,0,0,0.35)', maxHeight: '90vh', overflowY: 'auto', animation: 'modalPop 0.18s ease-out' }} onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal-box" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800 }}>{isEdit ? 'Edit Produk' : 'Tambah Produk'}</h2>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'var(--color-foreground)' }}>{isEdit ? 'Edit Produk' : 'Tambah Produk'}</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-muted-fg)', padding: 4, display: 'flex' }}><Icon name="x" size={18} /></button>
         </div>
 
@@ -125,15 +125,15 @@ function ProductModal({ product, categories, onClose, onSaved }) {
             {field('Minimum Stok', 'min_stock', 'number', '10')}
           </div>
           {form.selling_price && form.cost_price && (
-            <div style={{ padding: '10px 14px', borderRadius: 10, background: 'color-mix(in srgb, #10b981 10%, var(--color-muted))', border: '1px solid rgba(16,185,129,0.2)', fontSize: 13 }}>
-              Margin: <strong style={{ color: '#10b981' }}>{Math.round(((form.selling_price - form.cost_price) / form.selling_price) * 100)}%</strong>
-              &nbsp;&bull;&nbsp;Laba/item: <strong style={{ color: '#10b981' }}>{fmt(form.selling_price - form.cost_price)}</strong>
+            <div style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', background: 'color-mix(in srgb, var(--color-success) 10%, var(--color-muted))', border: '1px solid color-mix(in srgb, var(--color-success) 20%, transparent)', fontSize: 13 }}>
+              Margin: <strong style={{ color: 'var(--color-success)' }}>{Math.round(((form.selling_price - form.cost_price) / form.selling_price) * 100)}%</strong>
+              &nbsp;&bull;&nbsp;Laba/item: <strong style={{ color: 'var(--color-success)' }}>{fmt(form.selling_price - form.cost_price)}</strong>
             </div>
           )}
-          {error && <p style={{ margin: 0, color: '#ef4444', fontSize: 13 }}>{error}</p>}
+          {error && <p style={{ margin: 0, color: 'var(--color-destructive)', fontSize: 13 }}>{error}</p>}
           <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
-            <button type="button" onClick={onClose} style={{ flex: 1, padding: '10px', borderRadius: 10, border: '1px solid var(--color-border)', background: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 14, color: 'var(--color-foreground)' }}>Batal</button>
-            <button type="submit" disabled={loading} style={{ flex: 2, padding: '10px', borderRadius: 10, border: 'none', background: 'var(--color-primary)', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 14, color: 'var(--color-on-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: loading ? 0.7 : 1 }}>
+            <button type="button" onClick={onClose} style={{ flex: 1, padding: '10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 14, color: 'var(--color-foreground)' }}>Batal</button>
+            <button type="submit" disabled={loading} style={{ flex: 2, padding: '10px', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--color-primary)', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: 14, color: 'var(--color-on-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: loading ? 0.7 : 1 }}>
               {loading && <Spinner size={14} color="var(--color-on-primary)" />}
               {isEdit ? 'Simpan Perubahan' : 'Tambah Produk'}
             </button>
@@ -217,13 +217,12 @@ export default function ProductsPage() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 1280, margin: '0 auto', width: '100%' }}>
 
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+      <div class="page-header">
         <div>
-          <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-foreground)', letterSpacing: '-0.02em' }}>Produk & Inventaris</h1>
-          <p style={{ margin: '4px 0 0', fontSize: '0.875rem', color: 'var(--color-muted-fg)' }}>Kelola katalog produk, harga, HPP, dan stok.</p>
+          <h1>Produk &amp; Inventaris</h1>
+          <p>Kelola katalog produk, harga, HPP, dan stok.</p>
         </div>
-        <button onClick={() => { setEditProduct(null); setModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: 10, border: 'none', background: 'var(--color-primary)', color: 'var(--color-on-primary)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+        <button onClick={() => { setEditProduct(null); setModalOpen(true); }} className="btn btn-primary btn-md" style={{ gap: 8 }}>
           <Icon name="plus" size={16} color="var(--color-on-primary)" />
           Tambah Produk
         </button>
@@ -288,7 +287,7 @@ export default function ProductsPage() {
                       <td style={{ padding: '13px 16px', fontSize: 14, fontWeight: 700, color: 'var(--color-foreground)', whiteSpace: 'nowrap' }}>{fmt(p.selling_price)}</td>
                       <td style={{ padding: '13px 16px', fontSize: 13, color: 'var(--color-muted-fg)', whiteSpace: 'nowrap' }}>{p.cost_price ? fmt(p.cost_price) : '—'}</td>
                       <td style={{ padding: '13px 16px' }}>
-                        {margin !== null ? <span style={{ fontSize: 12, fontWeight: 700, color: margin >= 30 ? '#10b981' : margin >= 15 ? '#f59e0b' : '#ef4444' }}>{margin}%</span> : '—'}
+                        {margin !== null ? <span className={`status-badge ${margin >= 30 ? 'status-badge--success' : margin >= 15 ? 'status-badge--warning' : 'status-badge--danger'}`}>{margin}%</span> : '—'}
                       </td>
                       <td style={{ padding: '13px 16px' }}><StockBadge stock={p.stock} min={p.min_stock} /></td>
                       <td style={{ padding: '13px 16px' }}>
@@ -296,8 +295,8 @@ export default function ProductsPage() {
                           <button onClick={() => { setEditProduct(p); setModalOpen(true); }} style={{ padding: '6px 10px', borderRadius: 7, border: '1px solid var(--color-border)', background: 'none', cursor: 'pointer', color: 'var(--color-foreground)', display: 'flex', alignItems: 'center' }} title="Edit">
                             <Icon name="edit" size={15} />
                           </button>
-                          <button onClick={() => setDeleteTarget(p)} style={{ padding: '6px 10px', borderRadius: 7, border: '1px solid rgba(239,68,68,0.3)', background: 'none', cursor: 'pointer', color: '#ef4444', display: 'flex', alignItems: 'center' }} title="Hapus">
-                            <Icon name="trash" size={15} color="#ef4444" />
+                          <button onClick={() => setDeleteTarget(p)} style={{ padding: '6px 10px', borderRadius: 'var(--radius-sm)', border: '1px solid color-mix(in srgb, var(--color-destructive) 30%, transparent)', background: 'none', cursor: 'pointer', color: 'var(--color-destructive)', display: 'flex', alignItems: 'center' }} title="Hapus">
+                             <Icon name="trash" size={15} color="var(--color-destructive)" />
                           </button>
                         </div>
                       </td>

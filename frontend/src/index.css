@@ -373,3 +373,314 @@ a { text-decoration: none; color: inherit; }
     transform: none;
   }
 }
+
+/* ============================================================
+   RESPONSIVE UTILITIES — Dashboard & App Pages
+   ============================================================ */
+
+/* Hide sidebar on mobile */
+@media (max-width: 767px) {
+  .hidden-mobile { display: none !important; }
+}
+
+/* Responsive table wrapper — prevents horizontal scroll breaking */
+.table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+/* ============================================================
+   DASHBOARD PAGE LAYOUT — shared by all dashboard pages
+   ============================================================ */
+
+/* Page header: title + action button row */
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+.page-header h1 {
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 3vw, 1.75rem);
+  font-weight: 800;
+  color: var(--color-foreground);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.page-header p {
+  font-size: var(--text-sm);
+  color: var(--color-muted-fg);
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+/* Stat card grid — responsive */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+@media (max-width: 1199px) {
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 599px) {
+  .stat-grid { grid-template-columns: 1fr; }
+}
+
+/* 3-column grid */
+.col-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+@media (max-width: 1023px) {
+  .col-grid-3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 639px) {
+  .col-grid-3 { grid-template-columns: 1fr; }
+}
+
+/* 2-column grid */
+.col-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+@media (max-width: 767px) {
+  .col-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* Card — shared card style identical to landing */
+.app-card {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  transition: border-color var(--transition-slow), box-shadow var(--transition-slow);
+}
+.app-card:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 30%, var(--color-border));
+  box-shadow: var(--shadow-md);
+}
+
+/* Toolbar: search + filter row */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-md);
+}
+.toolbar-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 1;
+  min-width: 200px;
+  background: var(--color-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-md);
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+.toolbar-search:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+.toolbar-search input {
+  background: none;
+  border: none;
+  outline: none;
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  color: var(--color-foreground);
+  width: 100%;
+  padding: 10px 0;
+}
+.toolbar-search input::placeholder { color: var(--color-muted-fg); }
+
+/* Status badge — aligned with landing badge tokens */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.status-badge--success {
+  background: color-mix(in srgb, var(--color-success) 15%, transparent);
+  color: var(--color-success);
+}
+.status-badge--warning {
+  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
+  color: var(--color-primary);
+}
+.status-badge--danger {
+  background: color-mix(in srgb, var(--color-destructive) 15%, transparent);
+  color: var(--color-destructive);
+}
+.status-badge--muted {
+  background: color-mix(in srgb, var(--color-muted-fg) 15%, transparent);
+  color: var(--color-muted-fg);
+}
+
+/* Standard data table */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.data-table th {
+  text-align: left;
+  padding: 12px var(--space-md);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted-fg);
+  border-bottom: 2px solid var(--color-border);
+  white-space: nowrap;
+  background: var(--color-card);
+}
+.data-table td {
+  padding: 13px var(--space-md);
+  color: var(--color-foreground);
+  border-bottom: 1px solid var(--color-border-subtle, var(--color-border));
+  vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td {
+  background: color-mix(in srgb, var(--color-primary) 4%, var(--color-card));
+}
+
+/* Modal overlay */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  padding: var(--space-md);
+}
+.modal-box {
+  background: var(--color-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-xl);
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-card);
+  animation: modalPop 0.18s ease-out;
+}
+.modal-box--sm { max-width: 420px; }
+.modal-box--lg { max-width: 700px; }
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.94) translateY(8px); }
+  to   { opacity: 1; transform: scale(1)   translateY(0); }
+}
+
+/* Form field — matching AuthLayout style */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-foreground);
+  font-family: var(--font-display);
+}
+.form-label span.required {
+  color: var(--color-destructive);
+  margin-left: 3px;
+}
+.form-input {
+  padding: 11px var(--space-md);
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-card);
+  color: var(--color-foreground);
+  font-size: var(--text-sm);
+  font-family: var(--font-body);
+  outline: none;
+  min-height: 44px;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+.form-input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 12%, transparent);
+}
+.form-input::placeholder { color: var(--color-muted-fg); }
+.form-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: var(--color-muted);
+}
+.form-error {
+  font-size: var(--text-xs);
+  color: var(--color-destructive);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Section divider */
+.section-divider {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--space-lg) 0;
+}
+
+/* Responsive form grid */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+@media (max-width: 599px) {
+  .form-grid-2 { grid-template-columns: 1fr; }
+}
+
+/* Action row — bottom of modal */
+.action-row {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--color-border);
+  flex-wrap: wrap;
+}
+
+/* Dashboard main padding responsive */
+@media (max-width: 767px) {
+  /* DashboardLayout main already has padding: 24px;
+     on mobile we tighten it a bit */
+  .dashboard-main { padding: var(--space-md) !important; }
+}
+
+/* Onboarding page centering */
+.onboarding-wrap {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl) var(--space-md);
+  background: var(--color-background);
+}

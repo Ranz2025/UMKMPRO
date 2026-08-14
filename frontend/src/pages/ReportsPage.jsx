@@ -110,9 +110,9 @@ export default function ReportsPage() {
   const topProducts = reportData.top_products;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1280, margin: '0 auto', width: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 1280, margin: '0 auto', width: '100%', paddingInline: 'clamp(0px, 2vw, 8px)' }}>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
         <div>
           <h1 style={{ margin: 0, fontSize: 'var(--text-2xl, 1.5rem)', fontWeight: 800, color: 'var(--color-foreground)', letterSpacing: '-0.02em' }}>
             Laporan Keuangan &amp; Laba Rugi
@@ -155,7 +155,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Period Tabs */}
-      <div style={{ display: 'flex', background: 'var(--color-muted)', padding: 4, borderRadius: 12, gap: 2, width: 'fit-content' }}>
+      <div style={{ display: 'flex', background: 'var(--color-muted)', padding: 4, borderRadius: 12, gap: 2, width: '100%', maxWidth: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {PERIODS.map(({ key, label }) => {
           const active = period === key;
           return (
@@ -188,7 +188,7 @@ export default function ReportsPage() {
       </div>
 
       {/* Income Statement & Top Products */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)', gap: 20, alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 20, alignItems: 'start' }}>
         {/* Income Statement */}
         <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
           <div style={{ padding: '18px 24px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -245,16 +245,18 @@ export default function ReportsPage() {
             <div style={{
               marginTop: 16,
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '20px 22px',
-              background: netProfit >= 0 ? 'linear-gradient(135deg, var(--color-primary) 0%, #059669 100%)' : 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-              color: '#ffffff', borderRadius: 14,
-              boxShadow: '0 8px 24px -6px rgba(16,185,129,0.35)',
+              gap: 16,
+              padding: '14px 16px',
+              background: 'var(--color-success)',
+              color: 'var(--color-on-success, #ffffff)',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid color-mix(in srgb, var(--color-success) 35%, black)',
             }}>
               <div>
-                <div style={{ fontWeight: 800, fontSize: 'var(--text-base, 1rem)' }}>ESTIMASI LABA BERSIH</div>
-                <div style={{ fontSize: 11, opacity: 0.85, marginTop: 3 }}>Setelah HPP &amp; semua beban operasional</div>
+                <div style={{ fontWeight: 800, fontSize: 'var(--text-sm, 0.875rem)', letterSpacing: '0.02em' }}>ESTIMASI LABA BERSIH</div>
+                <div style={{ fontSize: 'var(--text-xs, 0.72rem)', color: 'color-mix(in srgb, var(--color-on-success, #ffffff) 82%, transparent)', marginTop: 3 }}>Setelah HPP &amp; semua beban operasional</div>
               </div>
-              <div style={{ fontWeight: 900, fontSize: '1.6rem', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', marginLeft: 16 }}>
+              <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: 'var(--text-lg, 1.125rem)', fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap', color: 'var(--color-on-success, #ffffff)' }}>
                 {loading ? '...' : `Rp ${netProfit.toLocaleString('id-ID')}`}
               </div>
             </div>

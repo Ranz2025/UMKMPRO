@@ -18,11 +18,11 @@ function Icon({ name, size = 18, color = 'currentColor' }) {
 const CATEGORIES = ['Semua', 'Listrik & Air', 'Gaji & SDM', 'Sewa', 'Bahan Baku', 'Lainnya'];
 
 const CAT_COLORS = {
-  'Listrik & Air': { color: '#06b6d4', bg: 'rgba(6,182,212,0.12)' },
-  'Gaji & SDM':    { color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)' },
-  'Sewa':          { color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-  'Bahan Baku':    { color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
-  'Lainnya':       { color: '#6b7280', bg: 'var(--color-muted)' },
+  'Listrik & Air': { color: 'var(--color-accent)',      bg: 'color-mix(in srgb, var(--color-accent) 12%, transparent)' },
+  'Gaji & SDM':    { color: 'var(--color-accent)',      bg: 'color-mix(in srgb, var(--color-accent) 12%, transparent)' },
+  'Sewa':          { color: 'var(--color-primary)',     bg: 'color-mix(in srgb, var(--color-primary) 12%, transparent)' },
+  'Bahan Baku':    { color: 'var(--color-success)',     bg: 'color-mix(in srgb, var(--color-success) 12%, transparent)' },
+  'Lainnya':       { color: 'var(--color-muted-fg)',    bg: 'var(--color-muted)' },
 };
 
 export default function ExpensesPage() {
@@ -144,23 +144,23 @@ export default function ExpensesPage() {
 
       {/* Stat Cards + Bar Viz */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-        <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 14, padding: 18, borderLeft: '3px solid #ef4444', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
+        <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 18, borderLeft: '3px solid var(--color-destructive)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Total Pengeluaran</div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#ef4444', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--color-destructive)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
             {loading ? '...' : `Rp ${totalExpenses.toLocaleString('id-ID')}`}
           </div>
           <div style={{ fontSize: 11, color: 'var(--color-muted-fg)', marginTop: 6 }}>{expenses.length} entri pengeluaran</div>
         </div>
-        <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 14, padding: 18, borderLeft: '3px solid #f59e0b', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
+        <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 18, borderLeft: '3px solid var(--color-primary)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Pengeluaran Terbesar</div>
-          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: '#f59e0b', lineHeight: 1 }}>{biggestCategory}</div>
+          <div style={{ fontSize: '1.2rem', fontWeight: 900, color: 'var(--color-primary)', lineHeight: 1 }}>{biggestCategory}</div>
           <div style={{ fontSize: 11, color: 'var(--color-muted-fg)', marginTop: 6 }}>
             {loading ? '...' : `Rp ${(byCategory[0]?.total || 0).toLocaleString('id-ID')}`}
           </div>
         </div>
-        <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 14, padding: 18, borderLeft: '3px solid #6366f1', boxShadow: '0 2px 6px rgba(0,0,0,0.03)' }}>
+        <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', padding: 18, borderLeft: '3px solid var(--color-accent)', boxShadow: 'var(--shadow-sm)' }}>
           <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Rata-rata Harian</div>
-          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#6366f1', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
+          <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--color-accent)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
             {loading ? '...' : `Rp ${avgDaily.toLocaleString('id-ID')}`}
           </div>
           <div style={{ fontSize: 11, color: 'var(--color-muted-fg)', marginTop: 6 }}>estimasi 30 hari terakhir</div>
@@ -267,7 +267,7 @@ export default function ExpensesPage() {
                     <td style={{ padding: '13px 20px' }}>
                       <span style={{ padding: '3px 10px', borderRadius: 99, fontSize: 11, fontWeight: 600, background: 'var(--color-muted)', color: 'var(--color-muted-fg)' }}>{exp.payment_method || exp.method || 'Transfer'}</span>
                     </td>
-                    <td style={{ padding: '13px 20px', fontWeight: 800, color: '#ef4444', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
+                    <td style={{ padding: '13px 20px', fontWeight: 800, color: 'var(--color-destructive)', textAlign: 'right', fontVariantNumeric: 'tabular-nums' }}>
                       −Rp {amount.toLocaleString('id-ID')}
                     </td>
                     <td style={{ padding: '13px 20px', textAlign: 'center' }}>
@@ -275,9 +275,9 @@ export default function ExpensesPage() {
                         onClick={() => confirmDelete === exp.id ? handleDelete(exp.id) : setConfirmDelete(exp.id)}
                         onBlur={() => setConfirmDelete(null)}
                         aria-label="Hapus pengeluaran"
-                        style={{ border: 'none', borderRadius: 7, width: 30, height: 30, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: confirmDelete === exp.id ? '#ef4444' : 'var(--color-muted)' }}
+                        style={{ border: 'none', borderRadius: 'var(--radius-sm)', width: 30, height: 30, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: confirmDelete === exp.id ? 'var(--color-destructive)' : 'var(--color-muted)' }}
                       >
-                        <Icon name="trash" size={13} color={confirmDelete === exp.id ? '#fff' : '#ef4444'} />
+                        <Icon name="trash" size={13} color={confirmDelete === exp.id ? 'var(--color-on-primary)' : 'var(--color-destructive)'} />
                       </button>
                     </td>
                   </tr>

@@ -67,7 +67,6 @@ export default function LoginPage() {
       subtitle="Masuk ke akun UMKMPro Anda untuk melanjutkan."
     >
       <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-
         <AuthAlert message={serverError} />
 
         <AuthFormField

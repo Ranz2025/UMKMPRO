@@ -22,9 +22,9 @@ function Icon({ name, size = 18, color = 'currentColor' }) {
 }
 
 const STATUS_STYLE = {
-  received:  { label: 'Diterima', color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
-  pending:   { label: 'Menunggu', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
-  ordered:   { label: 'Diproses', color: '#6366f1', bg: 'rgba(99,102,241,0.12)' },
+  received:  { label: 'Diterima', color: 'var(--color-success)', bg: 'color-mix(in srgb, var(--color-success) 12%, transparent)' },
+  pending:   { label: 'Menunggu', color: 'var(--color-primary)', bg: 'color-mix(in srgb, var(--color-primary) 12%, transparent)' },
+  ordered:   { label: 'Diproses', color: 'var(--color-accent)', bg: 'color-mix(in srgb, var(--color-accent) 12%, transparent)' },
 };
 
 const EMPTY_ITEM = { product_id: '', quantity: 1, unit_cost: '' };

@@ -1,6 +1,24 @@
 import { useState, useEffect } from 'react';
 import { customersApi } from '../api/endpoints/contacts';
 import { useToast } from '../context/ToastContext';
+import { Btn, Badge, Spinner } from '../components/ui/SharedUI';
+
+// ============================================================
+// CustomersPage — ALIGNED VERSION
+// Perbaikan konsistensi dengan landing page & dashboard lain:
+// - Tombol "Tambah Pelanggan", "Batal", "Simpan" sekarang pakai <Btn>
+//   (kelas .btn-primary/.btn-secondary sama persis dengan landing).
+// - Tier badge ("VIP"/"Loyal"/"Regular") pakai <Badge tone="...">
+//   dari SharedUI, bukan objek warna lokal.
+// - Warna kartu statistik (indigo/hijau/amber hex) dipetakan ke token
+//   semantik: primary/success/warning.
+// - Avatar warna pelanggan tetap butuh variasi (untuk membedakan
+//   banyak pelanggan sekaligus), jadi dibangun dari kombinasi token
+//   (primary/accent/success/warning) + color-mix, bukan 7 hex bebas
+//   yang tidak ada hubungannya dengan brand.
+// - Semua radius numerik → var(--radius-*), shadow → var(--shadow-*),
+//   heading & angka besar → var(--font-display).
+// ============================================================
 
 function Icon({ name, size = 18, color = 'currentColor' }) {
   const s = { width: size, height: size, flexShrink: 0 };
@@ -15,12 +33,22 @@ function Icon({ name, size = 18, color = 'currentColor' }) {
     case 'x':      return <svg {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
     case 'users':  return <svg {...p}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
     case 'star':   return <svg {...p}><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>;
-    case 'spin':   return <svg {...p} style={{ animation: 'spin 0.8s linear infinite' }}><circle cx="12" cy="12" r="10" strokeDasharray="32" strokeDashoffset="12"/></svg>;
     default:       return <svg {...p}><circle cx="12" cy="12" r="4"/></svg>;
   }
 }
 
-const AVATAR_COLORS = ['#6366f1','#10b981','#f59e0b','#ec4899','#06b6d4','#8b5cf6','#ef4444'];
+// Palet avatar — turunan dari token brand (primary/accent/success/warning)
+// dicampur dengan color-mix supaya tiap pelanggan tetap mudah dibedakan
+// tanpa memakai warna acak yang lepas dari identitas UMKMPro.
+const AVATAR_COLORS = [
+  'var(--color-primary)',
+  'var(--color-accent)',
+  'var(--color-success)',
+  'var(--color-warning, #FBBF24)',
+  'color-mix(in srgb, var(--color-primary) 55%, var(--color-accent))',
+  'color-mix(in srgb, var(--color-accent) 55%, var(--color-success))',
+  'color-mix(in srgb, var(--color-primary) 40%, black)',
+];
 
 function getInitials(name) {
   if (!name) return '??';
@@ -32,9 +60,9 @@ function getAvatarColor(name) {
 }
 function getTier(spend) {
   const val = Number(spend) || 0;
-  if (val >= 1000000) return { label: 'VIP', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' };
-  if (val >= 500000)  return { label: 'Loyal', color: '#6366f1', bg: 'rgba(99,102,241,0.12)' };
-  return { label: 'Regular', color: '#6b7280', bg: 'var(--color-muted)' };
+  if (val >= 1000000) return { label: 'VIP', tone: 'warning' };
+  if (val >= 500000) return { label: 'Loyal', tone: 'primary' };
+  return { label: 'Regular', tone: 'muted' };
 }
 
 export default function CustomersPage() {
@@ -62,9 +90,7 @@ export default function CustomersPage() {
     }
   };
 
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
+  useEffect(() => { fetchCustomers(); }, []);
 
   const filtered = customers.filter(c =>
     (c.name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -131,9 +157,21 @@ export default function CustomersPage() {
 
   const inputStyle = {
     width: '100%', boxSizing: 'border-box', padding: '11px 12px',
-    borderRadius: 8, border: '1px solid var(--color-border)',
+    borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)',
     background: 'var(--color-background)', color: 'var(--color-foreground)',
     fontSize: 'var(--text-sm, 0.875rem)', outline: 'none', transition: 'border-color 0.15s ease',
+    fontFamily: 'var(--font-body)',
+  };
+
+  const STAT_CARDS = [
+    { label: 'Total Pelanggan', value: loading ? '...' : customers.length, sub: 'terdaftar', tone: 'primary', icon: 'users' },
+    { label: 'Aktif Bulan Ini', value: loading ? '...' : activeThisMonth, sub: 'bertransaksi', tone: 'success', icon: 'star' },
+    { label: 'Total Nilai Belanja', value: loading ? '...' : `Rp ${totalSpendAll.toLocaleString('id-ID')}`, sub: 'akumulasi transaksi', tone: 'warning', icon: 'star' },
+  ];
+  const TONE_VAR = {
+    primary: 'var(--color-primary)',
+    success: 'var(--color-success)',
+    warning: 'var(--color-warning, #FBBF24)',
   };
 
   return (
@@ -141,53 +179,38 @@ export default function CustomersPage() {
       {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: 'var(--text-2xl, 1.5rem)', fontWeight: 800, color: 'var(--color-foreground)', letterSpacing: '-0.02em' }}>
+          <h1 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: 'var(--text-2xl, 1.5rem)', fontWeight: 800, color: 'var(--color-foreground)', letterSpacing: '-0.02em' }}>
             Manajemen Pelanggan (CRM)
           </h1>
           <p style={{ margin: '4px 0 0', fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-muted-fg)' }}>
             Kelola data kontak, riwayat belanja, dan tingkatkan retensi pelanggan bisnis Anda.
           </p>
         </div>
-        <button
-          onClick={handleOpenCreate}
-          aria-label="Tambah pelanggan baru"
-          style={{
-            background: 'var(--color-primary)', color: 'var(--color-on-primary)',
-            border: 'none', borderRadius: 10, padding: '11px 20px', fontWeight: 700,
-            fontSize: 'var(--text-sm, 0.875rem)', cursor: 'pointer',
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            boxShadow: '0 4px 14px rgba(16,185,129,0.25)', transition: 'all 0.15s ease',
-          }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-1px)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          <Icon name="plus" size={17} color="var(--color-on-primary)" />
+        <Btn onClick={handleOpenCreate} variant="primary" size="md" icon={<Icon name="plus" size={17} color="var(--color-on-primary)" />}>
           Tambah Pelanggan
-        </button>
+        </Btn>
       </div>
 
       {/* Stat Cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
-        {[
-          { label: 'Total Pelanggan', value: loading ? '...' : customers.length, sub: 'terdaftar', color: '#6366f1', icon: 'users' },
-          { label: 'Aktif Bulan Ini', value: loading ? '...' : activeThisMonth, sub: 'bertransaksi', color: '#10b981', icon: 'star' },
-          { label: 'Total Nilai Belanja', value: loading ? '...' : `Rp ${totalSpendAll.toLocaleString('id-ID')}`, sub: 'akumulasi transaksi', color: '#f59e0b', icon: 'star' },
-        ].map(card => (
-          <div
-            key={card.label}
-            style={{
-              background: 'var(--color-card)', border: '1px solid var(--color-border)',
-              borderRadius: 14, padding: 18, borderLeft: `3px solid ${card.color}`,
-              boxShadow: '0 2px 6px rgba(0,0,0,0.03)', transition: 'box-shadow 0.2s ease',
-            }}
-            onMouseEnter={e => e.currentTarget.style.boxShadow = `0 8px 20px -4px ${card.color}25`}
-            onMouseLeave={e => e.currentTarget.style.boxShadow = '0 2px 6px rgba(0,0,0,0.03)'}
-          >
-            <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{card.label}</div>
-            <div style={{ fontSize: '1.6rem', fontWeight: 900, color: card.color, lineHeight: 1 }}>{card.value}</div>
-            <div style={{ fontSize: 11, color: 'var(--color-muted-fg)', marginTop: 4 }}>{card.sub}</div>
-          </div>
-        ))}
+        {STAT_CARDS.map(card => {
+          const color = TONE_VAR[card.tone];
+          return (
+            <div
+              key={card.label}
+              className="hover-card"
+              style={{
+                background: 'var(--color-card)', border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius-lg)', padding: 'var(--space-md, 18px)',
+                borderLeft: `3px solid ${color}`,
+              }}
+            >
+              <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-muted-fg)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>{card.label}</div>
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '1.6rem', fontWeight: 900, color, lineHeight: 1 }}>{card.value}</div>
+              <div style={{ fontSize: 11, color: 'var(--color-muted-fg)', marginTop: 4 }}>{card.sub}</div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Search */}
@@ -201,14 +224,14 @@ export default function CustomersPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           aria-label="Cari pelanggan"
-          style={{ ...inputStyle, paddingLeft: 40 }}
+          style={{ ...inputStyle, paddingLeft: 40, borderRadius: 'var(--radius-md)' }}
           onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
           onBlur={e => e.target.style.borderColor = 'var(--color-border)'}
         />
       </div>
 
       {/* Table */}
-      <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+      <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-sm, 0 2px 8px rgba(0,0,0,0.03))' }}>
         <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: 'var(--text-sm, 0.875rem)' }}>
             <thead>
@@ -226,7 +249,7 @@ export default function CustomersPage() {
                 <tr>
                   <td colSpan={6} style={{ padding: 48, textAlign: 'center' }}>
                     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, color: 'var(--color-muted-fg)' }}>
-                      <Icon name="spin" size={20} color="var(--color-primary)" />
+                      <Spinner size={20} />
                       <span>Memuat data pelanggan dari API...</span>
                     </div>
                   </td>
@@ -257,9 +280,10 @@ export default function CustomersPage() {
                       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                         <div style={{
                           width: 38, height: 38, borderRadius: '50%', flexShrink: 0,
-                          background: `${avatarColor}22`, color: avatarColor,
+                          background: `color-mix(in srgb, ${avatarColor} 15%, transparent)`, color: avatarColor,
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontWeight: 800, fontSize: 13, border: `2px solid ${avatarColor}30`,
+                          fontWeight: 800, fontSize: 13, fontFamily: 'var(--font-display)',
+                          border: `2px solid color-mix(in srgb, ${avatarColor} 25%, transparent)`,
                         }}>
                           {getInitials(c.name)}
                         </div>
@@ -280,9 +304,7 @@ export default function CustomersPage() {
                       </div>
                     </td>
                     <td style={{ padding: '14px 20px' }}>
-                      <span style={{ padding: '3px 10px', borderRadius: 99, fontSize: 11, fontWeight: 700, background: tier.bg, color: tier.color }}>
-                        {tier.label}
-                      </span>
+                      <Badge tone={tier.tone}>{tier.label}</Badge>
                     </td>
                     <td style={{ padding: '14px 20px', color: 'var(--color-muted-fg)', fontVariantNumeric: 'tabular-nums' }}>
                       {ordersCount} pesanan
@@ -295,7 +317,7 @@ export default function CustomersPage() {
                         <button
                           onClick={() => handleOpenEdit(c)}
                           aria-label={`Edit ${c.name}`}
-                          style={{ background: 'var(--color-muted)', border: 'none', borderRadius: 7, width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease' }}
+                          style={{ background: 'var(--color-muted)', border: 'none', borderRadius: 'var(--radius-sm)', width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease' }}
                           onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-border)'; }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-muted)'; }}
                         >
@@ -306,12 +328,12 @@ export default function CustomersPage() {
                           onBlur={() => setConfirmDelete(null)}
                           aria-label={`Hapus ${c.name}`}
                           style={{
-                            border: 'none', borderRadius: 7, width: 32, height: 32, cursor: 'pointer',
+                            border: 'none', borderRadius: 'var(--radius-sm)', width: 32, height: 32, cursor: 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s ease',
-                            background: confirmDelete === c.id ? '#ef4444' : 'var(--color-muted)',
+                            background: confirmDelete === c.id ? 'var(--color-destructive, #EF4444)' : 'var(--color-muted)',
                           }}
                         >
-                          <Icon name="trash" size={14} color={confirmDelete === c.id ? '#fff' : '#ef4444'} />
+                          <Icon name="trash" size={14} color={confirmDelete === c.id ? 'var(--color-on-primary)' : 'var(--color-destructive, #EF4444)'} />
                         </button>
                       </div>
                     </td>
@@ -332,12 +354,12 @@ export default function CustomersPage() {
           style={{ position: 'fixed', inset: 0, zIndex: 100, background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           onClick={e => { if (e.target === e.currentTarget) setIsModalOpen(false); }}
         >
-          <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 20, width: '100%', maxWidth: 460, padding: 28, boxShadow: '0 24px 48px -12px rgba(0,0,0,0.3)' }}>
+          <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: 460, padding: 'var(--space-xl, 28px)', boxShadow: 'var(--shadow-lg, 0 24px 48px -12px rgba(0,0,0,0.3))' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-              <h2 style={{ margin: 0, fontSize: 'var(--text-lg, 1.125rem)', fontWeight: 800, color: 'var(--color-foreground)' }}>
+              <h2 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: 'var(--text-lg, 1.125rem)', fontWeight: 800, color: 'var(--color-foreground)' }}>
                 {editingId ? "Edit Pelanggan" : "Tambah Pelanggan Baru"}
               </h2>
-              <button onClick={() => setIsModalOpen(false)} aria-label="Tutup" style={{ background: 'var(--color-muted)', border: 'none', borderRadius: 8, width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <button onClick={() => setIsModalOpen(false)} aria-label="Tutup" style={{ background: 'var(--color-muted)', border: 'none', borderRadius: 'var(--radius-sm)', width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Icon name="x" size={16} />
               </button>
             </div>
@@ -349,8 +371,8 @@ export default function CustomersPage() {
                 { id: 'c-address', label: 'Alamat (Opsional)', placeholder: 'Jl. Merdeka No. 10, Bandung', key: 'address', required: false, type: 'text' },
               ].map(field => (
                 <div key={field.id}>
-                  <label htmlFor={field.id} style={{ display: 'block', fontSize: 'var(--text-xs, 0.75rem)', fontWeight: 600, marginBottom: 6 }}>
-                    {field.label} {field.required && <span style={{ color: '#ef4444' }}>*</span>}
+                  <label htmlFor={field.id} style={{ display: 'block', fontSize: 'var(--text-xs, 0.75rem)', fontWeight: 600, marginBottom: 6, color: 'var(--color-foreground)' }}>
+                    {field.label} {field.required && <span style={{ color: 'var(--color-destructive, #EF4444)' }}>*</span>}
                   </label>
                   <input
                     id={field.id}
@@ -359,23 +381,17 @@ export default function CustomersPage() {
                     placeholder={field.placeholder}
                     value={formData[field.key]}
                     onChange={e => setFormData({ ...formData, [field.key]: e.target.value })}
-                    style={inputStyle}
+                    style={{ ...inputStyle, borderRadius: 'var(--radius-md)' }}
                     onFocus={e => e.target.style.borderColor = 'var(--color-primary)'}
                     onBlur={e => e.target.style.borderColor = 'var(--color-border)'}
                   />
                 </div>
               ))}
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 8 }}>
-                <button type="button" onClick={() => setIsModalOpen(false)} style={{ padding: '11px 18px', borderRadius: 10, border: '1px solid var(--color-border)', background: 'transparent', cursor: 'pointer', fontWeight: 600, color: 'var(--color-foreground)', transition: 'all 0.15s ease' }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--color-muted)'}
-                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                >Batal</button>
-                <button type="submit" disabled={submitting} style={{ padding: '11px 22px', borderRadius: 10, border: 'none', background: 'var(--color-primary)', color: 'var(--color-on-primary)', fontWeight: 700, cursor: 'pointer', transition: 'all 0.15s ease', opacity: submitting ? 0.7 : 1 }}
-                  onMouseEnter={e => e.currentTarget.style.opacity = '0.9'}
-                  onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-                >
+                <Btn type="button" variant="secondary" size="md" onClick={() => setIsModalOpen(false)}>Batal</Btn>
+                <Btn type="submit" variant="primary" size="md" disabled={submitting}>
                   {submitting ? (editingId ? 'Menyimpan...' : 'Menambahkan...') : (editingId ? 'Simpan Perubahan' : 'Simpan Pelanggan')}
-                </button>
+                </Btn>
               </div>
             </form>
           </div>

@@ -1,49 +1,45 @@
-﻿import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
+import { Btn } from '../components/ui/SharedUI';
 
 // ============================================================
-// DashboardLayout  (FE-05)
-// Sidebar + Header + main content area
-// Responsive: sidebar collapse di layar < 768px (drawer mobile)
+// DashboardLayout — ALIGNED VERSION
+// File ini sudah cukup dekat dengan design system landing (banyak
+// var(--color-*) sudah dipakai). Perbaikan di versi ini:
+// - Radius numerik mentah (20, 16, 12, 10, 8, 6) → var(--radius-*).
+// - Warna destructive hardcode '#ef4444' → var(--color-destructive, #EF4444),
+//   konsisten dengan token yang sama di landing & DashboardPage.
+// - Tombol "Simpan"/"Batal" di modal ganti bisnis sekarang pakai <Btn>
+//   dari SharedUI (kelas .btn-primary/.btn-secondary sama seperti landing).
+// - Nama brand "UMKMPro" & judul modal pakai var(--font-display) secara
+//   eksplisit (sebelumnya ada yang masih inherit).
 // ============================================================
 
-// â”€â”€ Navigasi sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const NAV_ITEMS = [
-  {
-    group: 'Utama',
-    items: [
-      { to: '/dashboard',          label: 'Beranda',    icon: 'home' },
-    ],
-  },
+  { group: 'Utama', items: [{ to: '/dashboard', label: 'Beranda', icon: 'home' }] },
   {
     group: 'Bisnis',
     items: [
-      { to: '/dashboard/produk',   label: 'Produk',     icon: 'box' },
-      { to: '/dashboard/penjualan',label: 'Penjualan',  icon: 'cart' },
-      { to: '/dashboard/pembelian',label: 'Pembelian',  icon: 'purchase' },
-      { to: '/dashboard/pelanggan',label: 'Pelanggan',  icon: 'users' },
-      { to: '/dashboard/supplier', label: 'Supplier',   icon: 'truck' },
+      { to: '/dashboard/produk', label: 'Produk', icon: 'box' },
+      { to: '/dashboard/penjualan', label: 'Penjualan', icon: 'cart' },
+      { to: '/dashboard/pembelian', label: 'Pembelian', icon: 'purchase' },
+      { to: '/dashboard/pelanggan', label: 'Pelanggan', icon: 'users' },
+      { to: '/dashboard/supplier', label: 'Supplier', icon: 'truck' },
     ],
   },
   {
     group: 'Keuangan',
     items: [
-      { to: '/dashboard/kas',      label: 'Kas & Bank', icon: 'wallet' },
-      { to: '/dashboard/pengeluaran',label:'Pengeluaran',icon: 'expense' },
-      { to: '/dashboard/laporan',  label: 'Laporan',    icon: 'chart' },
+      { to: '/dashboard/kas', label: 'Kas & Bank', icon: 'wallet' },
+      { to: '/dashboard/pengeluaran', label: 'Pengeluaran', icon: 'expense' },
+      { to: '/dashboard/laporan', label: 'Laporan', icon: 'chart' },
     ],
   },
-  {
-    group: 'Pengaturan',
-    items: [
-      { to: '/dashboard/pengaturan',label:'Pengaturan', icon: 'settings' },
-    ],
-  },
+  { group: 'Pengaturan', items: [{ to: '/dashboard/pengaturan', label: 'Pengaturan', icon: 'settings' }] },
 ];
 
-// â”€â”€ SVG icon helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function NavIcon({ name, size = 18 }) {
   const s = { width: size, height: size, flexShrink: 0 };
   const props = { fill: 'none', stroke: 'currentColor', strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round', ...s, viewBox: '0 0 24 24', 'aria-hidden': 'true' };
@@ -62,10 +58,8 @@ function NavIcon({ name, size = 18 }) {
   }
 }
 
-// â”€â”€ Business Switcher Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function BusinessSwitcherModal({ onClose }) {
   const { user, activeBusiness, switchBusiness } = useAuth();
-  const navigate = useNavigate();
   const [creating, setCreating] = useState(false);
   const [newName, setNewName] = useState('');
   const [newType, setNewType] = useState('Retail');
@@ -77,7 +71,6 @@ function BusinessSwitcherModal({ onClose }) {
   const handleSwitch = (biz) => {
     switchBusiness(biz);
     onClose();
-    // reload halaman agar data ter-refresh dengan bisnis baru
     window.location.reload();
   };
 
@@ -110,21 +103,19 @@ function BusinessSwitcherModal({ onClose }) {
       onClick={onClose}
     >
       <div
-        style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 20, padding: 28, width: '90%', maxWidth: 460, boxShadow: '0 25px 50px rgba(0,0,0,0.35)', animation: 'modalPop 0.18s ease-out' }}
+        style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', padding: 'var(--space-xl, 28px)', width: '90%', maxWidth: 460, boxShadow: 'var(--shadow-lg, 0 25px 50px rgba(0,0,0,0.35))', animation: 'modalPop 0.18s ease-out' }}
         onClick={e => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-label="Pilih bisnis"
       >
-        {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-          <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: 'var(--color-foreground)' }}>Pilih Bisnis</h2>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-muted-fg)', padding: 4, borderRadius: 6, display: 'flex', alignItems: 'center' }}>
+          <h2 style={{ margin: 0, fontFamily: 'var(--font-display)', fontSize: 18, fontWeight: 800, color: 'var(--color-foreground)' }}>Pilih Bisnis</h2>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-muted-fg)', padding: 4, borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </button>
         </div>
 
-        {/* List bisnis */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16, maxHeight: 260, overflowY: 'auto' }}>
           {businesses.length === 0 && (
             <p style={{ margin: 0, color: 'var(--color-muted-fg)', fontSize: 14, textAlign: 'center', padding: '16px 0' }}>
@@ -139,13 +130,13 @@ function BusinessSwitcherModal({ onClose }) {
                 onClick={() => handleSwitch(biz)}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 14px', borderRadius: 12, cursor: 'pointer',
+                  padding: '12px 14px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
                   border: isActive ? '2px solid var(--color-primary)' : '1px solid var(--color-border)',
                   background: isActive ? 'color-mix(in srgb, var(--color-primary) 8%, var(--color-muted))' : 'var(--color-muted)',
                   transition: 'all 0.15s ease', textAlign: 'left',
                 }}
               >
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: isActive ? 'var(--color-primary)' : 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 800, fontSize: 14, color: isActive ? 'var(--color-on-primary)' : 'var(--color-muted-fg)' }}>
+                <div style={{ width: 36, height: 36, borderRadius: 'var(--radius-sm)', background: isActive ? 'var(--color-primary)' : 'var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 800, fontSize: 14, color: isActive ? 'var(--color-on-primary)' : 'var(--color-muted-fg)' }}>
                   {biz.name.charAt(0).toUpperCase()}
                 </div>
                 <div style={{ flex: 1, overflow: 'hidden' }}>
@@ -160,20 +151,13 @@ function BusinessSwitcherModal({ onClose }) {
           })}
         </div>
 
-        {/* Divider */}
         <div style={{ borderTop: '1px solid var(--color-border)', marginBottom: 16 }} />
 
-        {/* Buat bisnis baru */}
         {!creating ? (
-          <button
-            onClick={() => setCreating(true)}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '11px 16px', borderRadius: 10, border: '1.5px dashed var(--color-border)', background: 'none', cursor: 'pointer', color: 'var(--color-primary)', fontWeight: 700, fontSize: 14, transition: 'border-color 0.15s ease' }}
-            onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
-            onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <Btn type="button" variant="ghost" size="md" block onClick={() => setCreating(true)}
+               icon={<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>}>
             Buat Bisnis Baru
-          </button>
+          </Btn>
         ) : (
           <form onSubmit={handleCreate} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--color-foreground)' }}>Buat Bisnis Baru</p>
@@ -183,21 +167,21 @@ function BusinessSwitcherModal({ onClose }) {
               placeholder="Nama bisnis (contoh: Warung Bu Sari)"
               autoFocus
               required
-              style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid var(--color-border)', background: 'var(--color-muted)', color: 'var(--color-foreground)', fontSize: 14, outline: 'none' }}
+              style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-muted)', color: 'var(--color-foreground)', fontSize: 14, outline: 'none' }}
             />
             <select
               value={newType}
               onChange={e => setNewType(e.target.value)}
-              style={{ padding: '10px 14px', borderRadius: 10, border: '1px solid var(--color-border)', background: 'var(--color-muted)', color: 'var(--color-foreground)', fontSize: 14, outline: 'none', cursor: 'pointer' }}
+              style={{ padding: '10px 14px', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border)', background: 'var(--color-muted)', color: 'var(--color-foreground)', fontSize: 14, outline: 'none', cursor: 'pointer' }}
             >
               {TYPES.map(t => <option key={t} value={t}>{t}</option>)}
             </select>
-            {error && <p style={{ margin: 0, color: '#ef4444', fontSize: 13 }}>{error}</p>}
+            {error && <p style={{ margin: 0, color: 'var(--color-destructive, #EF4444)', fontSize: 13 }}>{error}</p>}
             <div style={{ display: 'flex', gap: 8 }}>
-              <button type="button" onClick={() => setCreating(false)} style={{ flex: 1, padding: '10px 16px', borderRadius: 10, border: '1px solid var(--color-border)', background: 'none', cursor: 'pointer', color: 'var(--color-foreground)', fontWeight: 600, fontSize: 14 }}>Batal</button>
-              <button type="submit" disabled={loading} style={{ flex: 1, padding: '10px 16px', borderRadius: 10, border: 'none', background: 'var(--color-primary)', cursor: loading ? 'not-allowed' : 'pointer', color: 'var(--color-on-primary)', fontWeight: 700, fontSize: 14, opacity: loading ? 0.7 : 1 }}>
+              <Btn type="button" variant="secondary" size="sm" block onClick={() => setCreating(false)}>Batal</Btn>
+              <Btn type="submit" variant="primary" size="sm" block disabled={loading}>
                 {loading ? 'Menyimpan...' : 'Simpan'}
-              </button>
+              </Btn>
             </div>
           </form>
         )}
@@ -206,29 +190,15 @@ function BusinessSwitcherModal({ onClose }) {
   );
 }
 
-// â”€â”€ Sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function Sidebar({ collapsed, onClose, isMobile, user, activeBusiness, onSwitchBusiness }) {
+function Sidebar({ collapsed, onClose, isMobile, user, onSwitchBusiness }) {
   const location = useLocation();
-
-  const isActive = (to) =>
-    to === '/dashboard'
-      ? location.pathname === '/dashboard'
-      : location.pathname.startsWith(to);
-
+  const isActive = (to) => to === '/dashboard' ? location.pathname === '/dashboard' : location.pathname.startsWith(to);
   const sidebarWidth = collapsed && !isMobile ? 64 : 240;
 
   return (
     <>
-      {/* Overlay mobile */}
       {isMobile && (
-        <div
-          onClick={onClose}
-          style={{
-            position: 'fixed', inset: 0, zIndex: 40,
-            background: 'rgba(0,0,0,0.5)',
-            backdropFilter: 'blur(2px)',
-          }}
-        />
+        <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 40, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(2px)' }} />
       )}
 
       <aside style={{
@@ -247,42 +217,27 @@ function Sidebar({ collapsed, onClose, isMobile, user, activeBusiness, onSwitchB
         overflow: 'hidden',
         flexShrink: 0,
       }}>
-        {/* Logo area */}
         <div style={{
           height: 64, display: 'flex', alignItems: 'center',
-          padding: collapsed && !isMobile ? '0 20px' : '0 20px',
+          padding: '0 20px',
           borderBottom: '1px solid var(--color-border)',
           gap: 10, flexShrink: 0,
           justifyContent: collapsed && !isMobile ? 'center' : 'space-between',
         }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', overflow: 'hidden' }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: 8,
-              background: 'var(--color-primary)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-            }}>
+            <div style={{ width: 32, height: 32, borderRadius: 'var(--radius-sm)', background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <svg width="16" height="16" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                 <path d="M3 14V8l6-5 6 5v6H11v-4H7v4H3z" fill="var(--color-on-primary)"/>
               </svg>
             </div>
             {(!collapsed || isMobile) && (
-              <span style={{
-                fontFamily: 'var(--font-display, inherit)',
-                fontWeight: 800, fontSize: '1.05rem',
-                color: 'var(--color-foreground)',
-                letterSpacing: '-0.02em',
-                whiteSpace: 'nowrap',
-              }}>
+              <span style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.05rem', color: 'var(--color-foreground)', letterSpacing: '-0.02em', whiteSpace: 'nowrap' }}>
                 UMKMPro
               </span>
             )}
           </Link>
           {isMobile && (
-            <button onClick={onClose} aria-label="Tutup sidebar" style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--color-muted-fg)', padding: 4, borderRadius: 6,
-              display: 'flex', alignItems: 'center',
-            }}>
+            <button onClick={onClose} aria-label="Tutup sidebar" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-muted-fg)', padding: 4, borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                 <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
               </svg>
@@ -290,17 +245,11 @@ function Sidebar({ collapsed, onClose, isMobile, user, activeBusiness, onSwitchB
           )}
         </div>
 
-        {/* Nav items */}
         <nav style={{ flex: 1, overflowY: 'auto', padding: '12px 8px' }} aria-label="Navigasi dasbor">
           {NAV_ITEMS.map(({ group, items }) => (
             <div key={group} style={{ marginBottom: 4 }}>
               {(!collapsed || isMobile) && (
-                <p style={{
-                  fontSize: 10, fontWeight: 700, textTransform: 'uppercase',
-                  letterSpacing: '0.1em', color: 'var(--color-muted-fg)',
-                  padding: '8px 8px 4px',
-                  margin: 0,
-                }}>
+                <p style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--color-muted-fg)', padding: '8px 8px 4px', margin: 0 }}>
                   {group}
                 </p>
               )}
@@ -313,11 +262,9 @@ function Sidebar({ collapsed, onClose, isMobile, user, activeBusiness, onSwitchB
                     onClick={isMobile ? onClose : undefined}
                     title={collapsed && !isMobile ? label : undefined}
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 10,
+                      display: 'flex', alignItems: 'center', gap: 10,
                       padding: collapsed && !isMobile ? '10px 0' : '9px 10px',
-                      borderRadius: 8,
+                      borderRadius: 'var(--radius-sm)',
                       textDecoration: 'none',
                       color: active ? 'var(--color-primary)' : 'var(--color-muted-fg)',
                       background: active ? 'color-mix(in srgb, var(--color-primary) 12%, transparent)' : 'transparent',
@@ -332,11 +279,7 @@ function Sidebar({ collapsed, onClose, isMobile, user, activeBusiness, onSwitchB
                     onMouseLeave={e => { if (!active) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-muted-fg)'; } }}
                   >
                     {active && (
-                      <span style={{
-                        position: 'absolute', left: -8, top: '50%', transform: 'translateY(-50%)',
-                        width: 3, height: 18, borderRadius: '0 3px 3px 0',
-                        background: 'var(--color-primary)',
-                      }} />
+                      <span style={{ position: 'absolute', left: -8, top: '50%', transform: 'translateY(-50%)', width: 3, height: 18, borderRadius: '0 3px 3px 0', background: 'var(--color-primary)' }} />
                     )}
                     <NavIcon name={icon} />
                     {(!collapsed || isMobile) && <span style={{ whiteSpace: 'nowrap' }}>{label}</span>}
@@ -347,20 +290,9 @@ function Sidebar({ collapsed, onClose, isMobile, user, activeBusiness, onSwitchB
           ))}
         </nav>
 
-        {/* User info di bottom */}
         {(!collapsed || isMobile) && (
-          <div style={{
-            padding: '12px 16px',
-            borderTop: '1px solid var(--color-border)',
-            display: 'flex', alignItems: 'center', gap: 10,
-            flexShrink: 0,
-          }}>
-            <div style={{
-              width: 32, height: 32, borderRadius: '50%',
-              background: 'color-mix(in srgb, var(--color-primary) 20%, var(--color-muted))',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-              fontWeight: 700, fontSize: 13, color: 'var(--color-primary)',
-            }}>
+          <div style={{ padding: '12px 16px', borderTop: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'color-mix(in srgb, var(--color-primary) 20%, var(--color-muted))', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 700, fontSize: 13, color: 'var(--color-primary)' }}>
               {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div style={{ overflow: 'hidden', flex: 1 }}>
@@ -375,7 +307,7 @@ function Sidebar({ collapsed, onClose, isMobile, user, activeBusiness, onSwitchB
               <button
                 onClick={onSwitchBusiness}
                 title="Ganti Bisnis"
-                style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 6, padding: '4px 6px', cursor: 'pointer', color: 'var(--color-muted-fg)', display: 'flex', alignItems: 'center', flexShrink: 0 }}
+                style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '4px 6px', cursor: 'pointer', color: 'var(--color-muted-fg)', display: 'flex', alignItems: 'center', flexShrink: 0 }}
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
                   <path d="M17 1l4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="M7 23l-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
@@ -399,12 +331,9 @@ export default function DashboardLayout({ children }) {
   const navigate = useNavigate();
   const menuRef = useRef(null);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (menuRef.current && !menuRef.current.contains(e.target)) {
-        setUserMenuOpen(false);
-      }
+      if (menuRef.current && !menuRef.current.contains(e.target)) setUserMenuOpen(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -415,43 +344,22 @@ export default function DashboardLayout({ children }) {
     navigate('/login');
   };
 
-  const initials = user?.name
-    ? user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
-    : 'U';
+  const initials = user?.name ? user.name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase() : 'U';
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', background: 'var(--color-background)', color: 'var(--color-foreground)' }}>
-      {/* Desktop Sidebar */}
       <div className="hidden-mobile">
-        <Sidebar
-          collapsed={collapsed}
-          isMobile={false}
-          user={user}
-          activeBusiness={activeBusiness}
-          onSwitchBusiness={() => setSwitchBizOpen(true)}
-        />
+        <Sidebar collapsed={collapsed} isMobile={false} user={user} onSwitchBusiness={() => setSwitchBizOpen(true)} />
       </div>
 
-      {/* Mobile Drawer */}
       {mobileOpen && (
-        <Sidebar
-          collapsed={false}
-          isMobile={true}
-          onClose={() => setMobileOpen(false)}
-          user={user}
-          activeBusiness={activeBusiness}
-          onSwitchBusiness={() => { setSwitchBizOpen(true); setMobileOpen(false); }}
-        />
+        <Sidebar collapsed={false} isMobile={true} onClose={() => setMobileOpen(false)} user={user}
+                 onSwitchBusiness={() => { setSwitchBizOpen(true); setMobileOpen(false); }} />
       )}
 
-      {/* Business Switcher Modal */}
-      {switchBizOpen && (
-        <BusinessSwitcherModal onClose={() => setSwitchBizOpen(false)} />
-      )}
+      {switchBizOpen && <BusinessSwitcherModal onClose={() => setSwitchBizOpen(false)} />}
 
-      {/* Main Content Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* Top Header */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
         <header style={{
           height: 64,
           background: 'var(--color-card)',
@@ -459,32 +367,16 @@ export default function DashboardLayout({ children }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0 24px',
+          padding: '0 16px',
           position: 'sticky',
           top: 0,
           zIndex: 20,
+          flexShrink: 0,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {/* Sidebar toggle button */}
             <button
-              onClick={() => {
-                if (window.innerWidth < 768) {
-                  setMobileOpen(!mobileOpen);
-                } else {
-                  setCollapsed(!collapsed);
-                }
-              }}
-              style={{
-                background: 'none',
-                border: '1px solid var(--color-border)',
-                borderRadius: 8,
-                padding: '6px 10px',
-                cursor: 'pointer',
-                color: 'var(--color-foreground)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-              }}
+              onClick={() => { if (window.innerWidth < 768) setMobileOpen(!mobileOpen); else setCollapsed(!collapsed); }}
+              style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: '6px 10px', cursor: 'pointer', color: 'var(--color-foreground)', display: 'flex', alignItems: 'center', gap: 6 }}
               aria-label="Toggle sidebar"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -492,19 +384,13 @@ export default function DashboardLayout({ children }) {
               </svg>
             </button>
 
-            {/* Active Business + Switch Button */}
             <button
               onClick={() => setSwitchBizOpen(true)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                background: 'none', border: '1px solid var(--color-border)',
-                borderRadius: 10, padding: '5px 12px', cursor: 'pointer',
-                transition: 'border-color 0.15s ease',
-              }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '5px 12px', cursor: 'pointer', transition: 'border-color 0.15s ease' }}
               onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--color-primary)'}
               onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
             >
-              <div style={{ width: 22, height: 22, borderRadius: 6, background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <div style={{ width: 22, height: 22, borderRadius: 'var(--radius-sm)', background: 'var(--color-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <svg width="11" height="11" viewBox="0 0 18 18" fill="none" aria-hidden="true">
                   <path d="M3 14V8l6-5 6 5v6H11v-4H7v4H3z" fill="var(--color-on-primary)"/>
                 </svg>
@@ -519,10 +405,9 @@ export default function DashboardLayout({ children }) {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 8, padding: 8, cursor: 'pointer', color: 'var(--color-foreground)', display: 'flex', alignItems: 'center' }}
+              style={{ background: 'none', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', padding: 8, cursor: 'pointer', color: 'var(--color-foreground)', display: 'flex', alignItems: 'center' }}
               aria-label="Toggle tema"
             >
               {theme === 'dark' ? (
@@ -532,11 +417,10 @@ export default function DashboardLayout({ children }) {
               )}
             </button>
 
-            {/* User Dropdown */}
             <div style={{ position: 'relative' }} ref={menuRef}>
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: 4, borderRadius: 8 }}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8, padding: 4, borderRadius: 'var(--radius-sm)' }}
               >
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--color-primary)', color: 'var(--color-on-primary)', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13 }}>
                   {initials}
@@ -544,22 +428,22 @@ export default function DashboardLayout({ children }) {
               </button>
 
               {userMenuOpen && (
-                <div style={{ position: 'absolute', right: 0, top: '110%', width: 220, background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 12, boxShadow: '0 10px 25px -5px rgba(0,0,0,0.2)', padding: 8, zIndex: 100 }}>
+                <div style={{ position: 'absolute', right: 0, top: '110%', width: 220, background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-lg, 0 10px 25px -5px rgba(0,0,0,0.2))', padding: 8, zIndex: 100 }}>
                   <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--color-border)', marginBottom: 4 }}>
                     <p style={{ margin: 0, fontWeight: 700, fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-foreground)' }}>{user?.name || 'Pengguna'}</p>
                     <p style={{ margin: 0, fontSize: 'var(--text-xs, 0.75rem)', color: 'var(--color-muted-fg)' }}>{user?.email || ''}</p>
                   </div>
-                  <button onClick={() => { setSwitchBizOpen(true); setUserMenuOpen(false); }} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '8px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-foreground)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button onClick={() => { setSwitchBizOpen(true); setUserMenuOpen(false); }} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '8px 12px', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-foreground)', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                     Ganti Bisnis
                   </button>
-                  <button onClick={() => navigate('/dashboard/pengaturan')} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '8px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-foreground)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <button onClick={() => navigate('/dashboard/pengaturan')} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '8px 12px', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-foreground)', display: 'flex', alignItems: 'center', gap: 8 }}>
                     <NavIcon name="settings" size={16} />
                     Pengaturan
                   </button>
                   <div style={{ borderTop: '1px solid var(--color-border)', margin: '4px 0' }} />
-                  <button onClick={handleLogout} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '8px 12px', borderRadius: 6, cursor: 'pointer', fontSize: 'var(--text-sm, 0.875rem)', color: '#ef4444', display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                  <button onClick={handleLogout} style={{ width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: '8px 12px', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontSize: 'var(--text-sm, 0.875rem)', color: 'var(--color-destructive, #EF4444)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--color-destructive, #EF4444)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                     Keluar
                   </button>
                 </div>
@@ -568,8 +452,7 @@ export default function DashboardLayout({ children }) {
           </div>
         </header>
 
-        {/* Page Content */}
-        <main style={{ flex: 1, padding: 24, overflowY: 'auto' }}>
+        <main className="dashboard-main" style={{ flex: 1, padding: 24, overflowY: 'auto', minWidth: 0 }}>
           {children || <Outlet />}
         </main>
       </div>
