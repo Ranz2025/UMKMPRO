@@ -23,6 +23,7 @@ import CashPage from './pages/CashPage';
 import ExpensesPage from './pages/ExpensesPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
+import ImportPage from './pages/ImportPage';
 import './index.css';
 
 // ── Error Boundary ─────────────────────────────────────────────────
@@ -163,6 +164,7 @@ function AppLayout() {
               <Route path="pengeluaran" element={<ExpensesPage />} />
               <Route path="laporan" element={<ReportsPage />} />
               <Route path="pengaturan" element={<SettingsPage />} />
+              <Route path="import" element={<ImportPage />} />
               <Route path="*" element={<DashboardPage />} />
             </Route>
 

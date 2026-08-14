@@ -11,6 +11,9 @@ export const salesApi = {
   // body: { customer_id?, payment_method, discount_amount?, tax_amount?, notes?, items: [{product_id, quantity, unit_price}] }
   create: (data) => client.post('/v1/sales', data),
 
+  // POST /api/v1/sales/payments/qris
+  createQris: (data) => client.post('/v1/sales/payments/qris', data),
+
   // POST /api/v1/sales/:id/cancel
   cancel: (id) => client.post(`/v1/sales/${id}/cancel`),
 };

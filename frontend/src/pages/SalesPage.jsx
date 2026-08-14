@@ -1,41 +1,37 @@
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { salesApi } from '../api/endpoints/sales';
 import { productsApi } from '../api/endpoints/products';
 import { Spinner } from '../components/ui/SharedUI';
 import { useToast } from '../context/ToastContext';
 
-// ── Icons ──────────────────────────────────────────────────────
 function Icon({ name, size = 18, color = 'currentColor' }) {
   const p = { fill: 'none', stroke: color, strokeWidth: '2', strokeLinecap: 'round', strokeLinejoin: 'round', width: size, height: size, flexShrink: 0, viewBox: '0 0 24 24', 'aria-hidden': 'true' };
   switch (name) {
-    case 'search':  return <svg {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
-    case 'plus':    return <svg {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
-    case 'minus':   return <svg {...p}><line x1="5" y1="12" x2="19" y2="12"/></svg>;
-    case 'trash':   return <svg {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
-    case 'check':   return <svg {...p}><polyline points="20 6 9 17 4 12"/></svg>;
+    case 'search': return <svg {...p}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>;
+    case 'plus': return <svg {...p}><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+    case 'minus': return <svg {...p}><line x1="5" y1="12" x2="19" y2="12"/></svg>;
+    case 'trash': return <svg {...p}><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>;
+    case 'check': return <svg {...p}><polyline points="20 6 9 17 4 12"/></svg>;
     case 'printer': return <svg {...p}><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>;
-    case 'x':       return <svg {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
+    case 'x': return <svg {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>;
     case 'receipt': return <svg {...p}><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1-2-1z"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/></svg>;
-    case 'list':    return <svg {...p}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
-    case 'cart':    return <svg {...p}><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>;
+    case 'list': return <svg {...p}><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>;
+    case 'cart': return <svg {...p}><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>;
     default: return <svg {...p}><circle cx="12" cy="12" r="4"/></svg>;
   }
 }
 
 const fmt = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n || 0);
-
 const PAYMENT_METHODS = [
-  { id: 'Tunai', label: 'Tunai', color: '#10b981' },
-  { id: 'QRIS', label: 'QRIS', color: '#6366f1' },
-  { id: 'Transfer', label: 'Transfer', color: '#f59e0b' },
+  { id: 'Tunai', label: 'Tunai', color: 'var(--color-success)' },
+  { id: 'QRIS', label: 'QRIS', color: 'var(--color-accent)' },
+  { id: 'Transfer', label: 'Transfer', color: 'var(--color-primary)' },
 ];
 
-// ── Struk Modal ────────────────────────────────────────────────
 function ReceiptModal({ tx, onClose }) {
   const receiptRef = useRef(null);
   if (!tx) return null;
   const time = new Date(tx.created_at || tx.sold_at || Date.now()).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' });
-
   const handlePrint = () => {
     const content = receiptRef.current?.innerHTML;
     const w = window.open('', '_blank', 'width=380,height=600');
@@ -47,12 +43,11 @@ function ReceiptModal({ tx, onClose }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 400, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)' }} onClick={onClose}>
-      <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 20, padding: 28, width: '90%', maxWidth: 380, boxShadow: '0 25px 50px rgba(0,0,0,0.35)' }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-xl)', padding: 28, width: '90%', maxWidth: 380, boxShadow: 'var(--shadow-card)' }} onClick={e => e.stopPropagation()}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
           <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800 }}>Struk Digital</h2>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--color-muted-fg)', display: 'flex' }}><Icon name="x" size={18} /></button>
         </div>
-
         <div ref={receiptRef} style={{ fontFamily: 'monospace', fontSize: 13, lineHeight: 1.7 }}>
           <p style={{ textAlign: 'center', fontWeight: 700, margin: '0 0 4px' }}>UMKMPRO</p>
           <p style={{ textAlign: 'center', margin: '0 0 8px', fontSize: 11, color: 'var(--color-muted-fg)' }}>Struk Penjualan</p>
@@ -73,28 +68,60 @@ function ReceiptModal({ tx, onClose }) {
           ))}
           <hr style={{ border: 'none', borderTop: '1px dashed var(--color-border)', margin: '8px 0' }} />
           <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: 15 }}><span>TOTAL</span><span>{fmt(tx.grand_total || tx.total_amount)}</span></div>
-          {tx.cash_received && tx.cash_received > (tx.grand_total || tx.total_amount) && (
-            <>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}><span>Tunai</span><span>{fmt(tx.cash_received)}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Kembalian</span><span>{fmt(tx.cash_received - (tx.grand_total || tx.total_amount))}</span></div>
-            </>
-          )}
+          {tx.cash_received && tx.cash_received > (tx.grand_total || tx.total_amount) && <><div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}><span>Tunai</span><span>{fmt(tx.cash_received)}</span></div><div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Kembalian</span><span>{fmt(tx.cash_received - (tx.grand_total || tx.total_amount))}</span></div></>}
           <p style={{ textAlign: 'center', margin: '12px 0 0', fontSize: 11, color: 'var(--color-muted-fg)' }}>Terima kasih atas kunjungan Anda!</p>
         </div>
-
         <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
           <button onClick={onClose} style={{ flex: 1, padding: '10px', borderRadius: 10, border: '1px solid var(--color-border)', background: 'none', cursor: 'pointer', fontWeight: 600, fontSize: 14, color: 'var(--color-foreground)' }}>Tutup</button>
-          <button onClick={handlePrint} style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: 'var(--color-primary)', cursor: 'pointer', fontWeight: 700, fontSize: 14, color: 'var(--color-on-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-            <Icon name="printer" size={16} color="var(--color-on-primary)" /> Cetak
-          </button>
+          <button onClick={handlePrint} style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: 'var(--color-primary)', cursor: 'pointer', fontWeight: 700, fontSize: 14, color: 'var(--color-on-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><Icon name="printer" size={16} color="var(--color-on-primary)" /> Cetak</button>
         </div>
       </div>
     </div>
   );
 }
 
-// ── POS Panel ──────────────────────────────────────────────────
-function POSPanel({ products, loadingProducts, refreshProducts }) {
+function QrisModal({ payload, onClose, onPaid, onTimeout }) {
+  if (!payload) return null;
+  const sale = payload.sale;
+  const codeUrl = payload.qr_code_url;
+  const qrString = payload.qr_string;
+  const status = sale?.status || 'pending';
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, zIndex: 450, background: 'rgba(2,6,23,0.66)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }} onClick={onClose}>
+      <div onClick={e => e.stopPropagation()} style={{ width: '100%', maxWidth: 440, borderRadius: 24, background: 'var(--color-card)', border: '1px solid var(--color-border)', boxShadow: '0 30px 80px rgba(0,0,0,0.25)', overflow: 'hidden' }}>
+        <div style={{ padding: 20, borderBottom: '1px solid var(--color-border)', display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+          <div>
+            <p style={{ margin: 0, fontSize: 12, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--color-muted-fg)', fontWeight: 700 }}>Pembayaran QRIS</p>
+            <h3 style={{ margin: '4px 0 0', fontSize: 18, fontWeight: 800, color: 'var(--color-foreground)' }}>{sale?.invoice_number || 'Invoice'}</h3>
+          </div>
+          <button onClick={onClose} style={{ border: 'none', background: 'var(--color-muted)', color: 'var(--color-foreground)', width: 36, height: 36, borderRadius: 999, cursor: 'pointer', display: 'grid', placeItems: 'center' }}><Icon name="x" size={18} /></button>
+        </div>
+        <div style={{ padding: 20, display: 'grid', gap: 16 }}>
+          <div style={{ display: 'grid', placeItems: 'center', padding: 18, borderRadius: 20, border: '1px solid var(--color-border)', background: 'linear-gradient(180deg, color-mix(in srgb, var(--color-primary) 7%, transparent), transparent)' }}>
+            <div style={{ width: 260, height: 260, borderRadius: 18, background: 'white', display: 'grid', placeItems: 'center', overflow: 'hidden', border: '1px solid rgba(15,23,42,0.06)' }}>
+              {codeUrl ? <img src={codeUrl} alt="QRIS" style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : <div style={{ padding: 18, textAlign: 'center' }}><p style={{ margin: 0, fontWeight: 800, color: '#0f172a' }}>QRIS siap dipindai</p><p style={{ margin: '8px 0 0', fontSize: 12, color: '#475569' }}>Midtrans tidak mengembalikan URL QR. Gunakan payload QR string di bawah untuk integrasi image generator.</p></div>}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gap: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}><span style={{ color: 'var(--color-muted-fg)', fontSize: 13 }}>Status</span><span style={{ padding: '6px 10px', borderRadius: 999, fontSize: 12, fontWeight: 700, background: status === 'paid' ? 'rgba(16,185,129,0.12)' : 'rgba(99,102,241,0.12)', color: status === 'paid' ? '#10b981' : '#6366f1' }}>{status}</span></div>
+            <div style={{ display: 'grid', gap: 6 }}>
+              <span style={{ fontSize: 12, color: 'var(--color-muted-fg)' }}>Order ID</span>
+              <code style={{ padding: 12, borderRadius: 14, background: 'var(--color-muted)', border: '1px solid var(--color-border)', color: 'var(--color-foreground)', overflowX: 'auto' }}>{payload.order_id}</code>
+            </div>
+            {qrString && <div style={{ display: 'grid', gap: 6 }}><span style={{ fontSize: 12, color: 'var(--color-muted-fg)' }}>QR String</span><code style={{ padding: 12, borderRadius: 14, background: 'var(--color-muted)', border: '1px solid var(--color-border)', color: 'var(--color-foreground)', whiteSpace: 'pre-wrap', wordBreak: 'break-all', maxHeight: 120, overflow: 'auto' }}>{qrString}</code></div>}
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={onClose} style={{ flex: 1, padding: '12px 14px', borderRadius: 14, border: '1px solid var(--color-border)', background: 'var(--color-card)', cursor: 'pointer', fontWeight: 700 }}>Tutup</button>
+            <button onClick={onTimeout} style={{ flex: 1, padding: '12px 14px', borderRadius: 14, border: 'none', background: 'var(--color-primary)', color: 'var(--color-on-primary)', cursor: 'pointer', fontWeight: 800 }}>Cek Sekarang</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function POSPanel({ products, loadingProducts, refreshProducts, onQrisSuccess, onHistoryRefresh }) {
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState([]);
   const [payMethod, setPayMethod] = useState('Tunai');
@@ -102,11 +129,16 @@ function POSPanel({ products, loadingProducts, refreshProducts }) {
   const [customerName, setCustomerName] = useState('');
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [receiptTx, setReceiptTx] = useState(null);
+  const [qrisPayload, setQrisPayload] = useState(null);
+  const [qrisPolling, setQrisPolling] = useState(false);
+  const qrisTimer = useRef(null);
   const { addToast } = useToast();
 
-  const filtered = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()));
+  const filtered = useMemo(() => products.filter(p => p.name.toLowerCase().includes(search.toLowerCase())), [products, search]);
   const total = cart.reduce((s, i) => s + (Number(i.selling_price) || 0) * i.qty, 0);
   const change = payMethod === 'Tunai' && Number(cashReceived) > total ? Number(cashReceived) - total : 0;
+
+  useEffect(() => () => { if (qrisTimer.current) clearInterval(qrisTimer.current); }, []);
 
   const addToCart = (prod) => {
     const unitPrice = Number(prod.selling_price) || 0;
@@ -117,31 +149,66 @@ function POSPanel({ products, loadingProducts, refreshProducts }) {
     });
   };
 
-  const updateQty = (id, delta) => {
-    setCart(prev => prev.map(i => i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i).filter(i => i.qty > 0));
+  const updateQty = (id, delta) => setCart(prev => prev.map(i => i.id === id ? { ...i, qty: Math.max(0, i.qty + delta) } : i).filter(i => i.qty > 0));
+  const clearCart = () => { setCart([]); setCashReceived(''); setCustomerName(''); };
+
+  const pollSale = async (saleId) => {
+    try {
+      const res = await salesApi.get(saleId);
+      const sale = res.data?.data || res.data;
+      if (!sale) return;
+      if (sale.status === 'paid') {
+        if (qrisTimer.current) clearInterval(qrisTimer.current);
+        qrisTimer.current = null;
+        setQrisPolling(false);
+        addToast('Pembayaran QRIS berhasil diterima.', 'success');
+        setQrisPayload(prev => prev ? ({ ...prev, sale }) : prev);
+        onQrisSuccess?.(sale);
+        onHistoryRefresh?.();
+      } else if (sale.status === 'cancelled' || sale.status === 'failed') {
+        if (qrisTimer.current) clearInterval(qrisTimer.current);
+        qrisTimer.current = null;
+        setQrisPolling(false);
+        addToast('Pembayaran QRIS dibatalkan atau kedaluwarsa.', 'error');
+        setQrisPayload(prev => prev ? ({ ...prev, sale }) : prev);
+      }
+    } catch (err) {
+      console.error('Polling QRIS error:', err);
+    }
   };
 
-  const clearCart = () => { setCart([]); setCashReceived(''); setCustomerName(''); };
+  const startPolling = (saleId) => {
+    if (qrisTimer.current) clearInterval(qrisTimer.current);
+    setQrisPolling(true);
+    qrisTimer.current = setInterval(() => pollSale(saleId), 5000);
+    pollSale(saleId);
+  };
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     setCheckoutLoading(true);
-
     const payload = {
       payment_method: payMethod,
-      items: cart.map(i => ({
-        product_id: i.id,
-        quantity: i.qty,
-        unit_price: Number(i.selling_price) || 0,
-      })),
+      items: cart.map(i => ({ product_id: i.id, quantity: i.qty, unit_price: Number(i.selling_price) || 0 })),
       notes: customerName ? `Pelanggan: ${customerName}` : undefined,
     };
 
     try {
+      if (payMethod === 'QRIS') {
+        const res = await salesApi.createQris(payload);
+        const body = res.data?.data || res.data || {};
+        const sale = body.sale;
+        setQrisPayload(body);
+        addToast('QRIS berhasil dibuat. Silakan scan QR.', 'success');
+        clearCart();
+        if (refreshProducts) refreshProducts();
+        if (sale?.id) startPolling(sale.id);
+        return;
+      }
+
       const res = await salesApi.create(payload);
       const createdTx = res.data?.data || res.data || {};
       addToast('Transaksi penjualan berhasil!', 'success');
-
       const tx = {
         id: createdTx.invoice_number || createdTx.id || `INV-${Date.now().toString().slice(-8)}`,
         created_at: new Date().toISOString(),
@@ -151,7 +218,6 @@ function POSPanel({ products, loadingProducts, refreshProducts }) {
         customer_name: customerName || 'Pelanggan Umum',
         items: cart.map(i => ({ name: i.name, qty: i.qty, price: i.selling_price })),
       };
-
       setReceiptTx(tx);
       clearCart();
       if (refreshProducts) refreshProducts();
@@ -163,122 +229,47 @@ function POSPanel({ products, loadingProducts, refreshProducts }) {
     }
   };
 
+  const qrisIsPaid = qrisPayload?.sale?.status === 'paid';
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1.4fr) minmax(0,1fr)', gap: 16, height: 'calc(100vh - 140px)', minHeight: 560 }}>
-      {/* Katalog Produk */}
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16, minHeight: 560 }}>
       <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--color-border)' }}>
           <div style={{ position: 'relative' }}>
-            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }}>
-              <Icon name="search" size={15} color="var(--color-muted-fg)" />
-            </span>
+            <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }}><Icon name="search" size={15} color="var(--color-muted-fg)" /></span>
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Cari produk..." style={{ width: '100%', padding: '8px 10px 8px 34px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-muted)', color: 'var(--color-foreground)', fontSize: 13, outline: 'none', boxSizing: 'border-box' }} />
           </div>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: 12 }}>
-          {loadingProducts ? (
-            <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}><Spinner size={24} /></div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
-              {filtered.map(prod => (
-                <button key={prod.id} onClick={() => addToCart(prod)} disabled={prod.stock <= 0}
-                  style={{ padding: '12px 10px', borderRadius: 12, border: '1px solid var(--color-border)', background: 'var(--color-muted)', cursor: prod.stock <= 0 ? 'not-allowed' : 'pointer', textAlign: 'left', transition: 'all 0.15s ease', opacity: prod.stock <= 0 ? 0.5 : 1 }}
-                  onMouseEnter={e => { if (prod.stock > 0) { e.currentTarget.style.borderColor = 'var(--color-primary)'; e.currentTarget.style.background = 'color-mix(in srgb, var(--color-primary) 8%, var(--color-muted))'; } }}
-                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.background = 'var(--color-muted)'; }}
-                >
-                  <div style={{ width: 32, height: 32, borderRadius: 8, background: 'color-mix(in srgb, var(--color-accent) 20%, var(--color-border))', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
-                    <Icon name="cart" size={14} color="var(--color-accent)" />
-                  </div>
-                  <p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 600, color: 'var(--color-foreground)', lineHeight: 1.3 }}>{prod.name}</p>
-                  <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--color-primary)' }}>{fmt(prod.selling_price)}</p>
-                  <p style={{ margin: '2px 0 0', fontSize: 11, color: prod.stock <= 5 ? '#f59e0b' : 'var(--color-muted-fg)' }}>Stok: {prod.stock}</p>
-                </button>
-              ))}
-              {filtered.length === 0 && <p style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--color-muted-fg)', padding: '24px 0', fontSize: 14 }}>Produk tidak ditemukan</p>}
-            </div>
-          )}
+          {loadingProducts ? <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}><Spinner size={24} /></div> : <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>{filtered.map(prod => <button key={prod.id} onClick={() => addToCart(prod)} disabled={prod.stock <= 0} style={{ padding: '12px 10px', borderRadius: 12, border: '1px solid var(--color-border)', background: 'var(--color-muted)', cursor: prod.stock <= 0 ? 'not-allowed' : 'pointer', textAlign: 'left', transition: 'all 0.15s ease', opacity: prod.stock <= 0 ? 0.5 : 1 }}><div style={{ width: 32, height: 32, borderRadius: 8, background: 'color-mix(in srgb, var(--color-accent) 20%, var(--color-border))', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}><Icon name="cart" size={14} color="var(--color-accent)" /></div><p style={{ margin: '0 0 4px', fontSize: 13, fontWeight: 600, color: 'var(--color-foreground)', lineHeight: 1.3 }}>{prod.name}</p><p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: 'var(--color-primary)' }}>{fmt(prod.selling_price)}</p><p style={{ margin: '2px 0 0', fontSize: 11, color: prod.stock <= 5 ? '#f59e0b' : 'var(--color-muted-fg)' }}>Stok: {prod.stock}</p></button>)}{filtered.length === 0 && <p style={{ gridColumn: '1/-1', textAlign: 'center', color: 'var(--color-muted-fg)', padding: '24px 0', fontSize: 14 }}>Produk tidak ditemukan</p>}</div>}
         </div>
       </div>
 
-      {/* Cart Panel */}
       <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 16, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--color-border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontWeight: 700, fontSize: 15, color: 'var(--color-foreground)' }}>Keranjang ({cart.length} item)</span>
           {cart.length > 0 && <button onClick={clearCart} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444', fontSize: 12, fontWeight: 600 }}>Kosongkan</button>}
         </div>
-
-        {/* Cart Items */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '10px 12px' }}>
-          {cart.length === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 8, color: 'var(--color-muted-fg)' }}>
-              <Icon name="cart" size={32} color="var(--color-border)" />
-              <p style={{ margin: 0, fontSize: 13 }}>Belum ada produk dipilih</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {cart.map(item => (
-                <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'var(--color-muted)' }}>
-                  <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--color-foreground)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p>
-                    <p style={{ margin: 0, fontSize: 12, color: 'var(--color-primary)', fontWeight: 700 }}>{fmt(item.selling_price * item.qty)}</p>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-                    <button onClick={() => updateQty(item.id, -1)} style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon name="minus" size={12} />
-                    </button>
-                    <span style={{ minWidth: 20, textAlign: 'center', fontWeight: 700, fontSize: 14 }}>{item.qty}</span>
-                    <button onClick={() => updateQty(item.id, 1)} style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon name="plus" size={12} />
-                    </button>
-                    <button onClick={() => updateQty(item.id, -item.qty)} style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(239,68,68,0.3)', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon name="trash" size={12} color="#ef4444" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          {cart.length === 0 ? <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 8, color: 'var(--color-muted-fg)' }}><Icon name="cart" size={32} color="var(--color-border)" /><p style={{ margin: 0, fontSize: 13 }}>Belum ada produk dipilih</p></div> : <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{cart.map(item => <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderRadius: 10, background: 'var(--color-muted)' }}><div style={{ flex: 1, overflow: 'hidden' }}><p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--color-foreground)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</p><p style={{ margin: 0, fontSize: 12, color: 'var(--color-primary)', fontWeight: 700 }}>{fmt(item.selling_price * item.qty)}</p></div><div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}><button onClick={() => updateQty(item.id, -1)} style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="minus" size={12} /></button><span style={{ minWidth: 20, textAlign: 'center', fontWeight: 700, fontSize: 14 }}>{item.qty}</span><button onClick={() => updateQty(item.id, 1)} style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid var(--color-border)', background: 'var(--color-card)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="plus" size={12} /></button><button onClick={() => updateQty(item.id, -item.qty)} style={{ width: 26, height: 26, borderRadius: 6, border: '1px solid rgba(239,68,68,0.3)', background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="trash" size={12} color="#ef4444" /></button></div></div>)}</div>}
         </div>
 
-        {/* Checkout Area */}
         <div style={{ padding: '14px 16px', borderTop: '1px solid var(--color-border)', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <input value={customerName} onChange={e => setCustomerName(e.target.value)} placeholder="Nama pelanggan (opsional)" style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-muted)', color: 'var(--color-foreground)', fontSize: 13, outline: 'none' }} />
-
-          <div style={{ display: 'flex', gap: 6 }}>
-            {PAYMENT_METHODS.map(m => (
-              <button key={m.id} onClick={() => setPayMethod(m.id)} style={{ flex: 1, padding: '7px 4px', borderRadius: 8, border: '1.5px solid', borderColor: payMethod === m.id ? m.color : 'var(--color-border)', background: payMethod === m.id ? `color-mix(in srgb, ${m.color} 15%, var(--color-muted))` : 'var(--color-muted)', color: payMethod === m.id ? m.color : 'var(--color-muted-fg)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>
-                {m.label}
-              </button>
-            ))}
-          </div>
-
-          {payMethod === 'Tunai' && (
-            <input type="number" value={cashReceived} onChange={e => setCashReceived(e.target.value)} placeholder="Uang diterima (Rp)" style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-muted)', color: 'var(--color-foreground)', fontSize: 13, outline: 'none' }} />
-          )}
-
-          <div style={{ borderTop: '1px dashed var(--color-border)', paddingTop: 10 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span style={{ fontSize: 13, color: 'var(--color-muted-fg)' }}>{cart.reduce((s, i) => s + i.qty, 0)} item</span>
-              <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-foreground)' }}>{fmt(total)}</span>
-            </div>
-            {change > 0 && <p style={{ margin: '0 0 8px', fontSize: 13, color: '#10b981', fontWeight: 600 }}>Kembalian: {fmt(change)}</p>}
-          </div>
-
-          <button onClick={handleCheckout} disabled={cart.length === 0 || checkoutLoading}
-            style={{ padding: '13px', borderRadius: 12, border: 'none', background: cart.length === 0 ? 'var(--color-border)' : 'var(--color-primary)', color: cart.length === 0 ? 'var(--color-muted-fg)' : 'var(--color-on-primary)', fontWeight: 800, fontSize: 15, cursor: cart.length === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.15s ease' }}>
-            {checkoutLoading ? <Spinner size={18} color="var(--color-on-primary)" /> : <Icon name="check" size={18} color="var(--color-on-primary)" />}
-            {checkoutLoading ? 'Memproses...' : 'Bayar Sekarang'}
-          </button>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>{PAYMENT_METHODS.map(m => <button key={m.id} onClick={() => setPayMethod(m.id)} style={{ flex: '1 1 92px', minWidth: 92, padding: '7px 4px', borderRadius: 8, border: '1.5px solid', borderColor: payMethod === m.id ? m.color : 'var(--color-border)', background: payMethod === m.id ? `color-mix(in srgb, ${m.color} 15%, var(--color-muted))` : 'var(--color-muted)', color: payMethod === m.id ? m.color : 'var(--color-muted-fg)', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}>{m.label}</button>)}</div>
+          {payMethod === 'Tunai' && <input type="number" value={cashReceived} onChange={e => setCashReceived(e.target.value)} placeholder="Uang diterima (Rp)" style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid var(--color-border)', background: 'var(--color-muted)', color: 'var(--color-foreground)', fontSize: 13, outline: 'none' }} />}
+          <div style={{ borderTop: '1px dashed var(--color-border)', paddingTop: 10 }}><div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}><span style={{ fontSize: 13, color: 'var(--color-muted-fg)' }}>{cart.reduce((s, i) => s + i.qty, 0)} item</span><span style={{ fontSize: 20, fontWeight: 800, color: 'var(--color-foreground)' }}>{fmt(total)}</span></div>{change > 0 && <p style={{ margin: '0 0 8px', fontSize: 13, color: '#10b981', fontWeight: 600 }}>Kembalian: {fmt(change)}</p>}</div>
+          <button onClick={handleCheckout} disabled={cart.length === 0 || checkoutLoading} style={{ padding: '13px', borderRadius: 12, border: 'none', background: cart.length === 0 ? 'var(--color-border)' : 'var(--color-primary)', color: cart.length === 0 ? 'var(--color-muted-fg)' : 'var(--color-on-primary)', fontWeight: 800, fontSize: 15, cursor: cart.length === 0 ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.15s ease' }}>{checkoutLoading ? <Spinner size={18} color="var(--color-on-primary)" /> : <Icon name="check" size={18} color="var(--color-on-primary)" />}{checkoutLoading ? 'Memproses...' : payMethod === 'QRIS' ? 'Bayar QRIS' : 'Bayar Sekarang'}</button>
         </div>
       </div>
 
       {receiptTx && <ReceiptModal tx={receiptTx} onClose={() => setReceiptTx(null)} />}
+      {qrisPayload && <QrisModal payload={qrisPayload} onClose={() => setQrisPayload(null)} onTimeout={() => qrisPayload?.sale?.id && pollSale(qrisPayload.sale.id)} onPaid={() => setQrisPayload(prev => prev ? ({ ...prev, sale: { ...prev.sale, status: 'paid' } }) : prev)} />}
     </div>
   );
 }
 
-// ── History Panel ─────────────────────────────────────────────
-function HistoryPanel() {
+function HistoryPanel({ refreshKey = 0 }) {
   const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [receiptTx, setReceiptTx] = useState(null);
@@ -298,9 +289,7 @@ function HistoryPanel() {
     }
   };
 
-  useEffect(() => {
-    fetchHistory();
-  }, []);
+  useEffect(() => { fetchHistory(); }, [refreshKey]);
 
   const totalToday = history.filter(t => (t.status || 'paid') === 'paid').reduce((s, t) => s + (Number(t.grand_total || t.total_amount) || 0), 0);
   const METHOD_COLOR = { Tunai: '#10b981', QRIS: '#6366f1', Transfer: '#f59e0b', Cash: '#10b981' };
@@ -308,86 +297,22 @@ function HistoryPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap' }}>
-        {[
-          { label: 'Total Penjualan Hari Ini', value: fmt(totalToday), color: 'var(--color-primary)' },
-          { label: 'Jumlah Transaksi', value: `${history.length} transaksi`, color: '#3b82f6' },
-          { label: 'Rata-rata / Transaksi', value: fmt(history.length ? Math.round(totalToday / history.length) : 0), color: '#10b981' },
-        ].map((s, i) => (
-          <div key={i} style={{ flex: '1 1 160px', background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '14px 16px' }}>
-            <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: 'var(--color-muted-fg)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</p>
-            <p style={{ margin: '6px 0 0', fontSize: 18, fontWeight: 800, color: s.color }}>{s.value}</p>
-          </div>
-        ))}
+        {[{ label: 'Total Penjualan Hari Ini', value: fmt(totalToday), color: 'var(--color-primary)' }, { label: 'Jumlah Transaksi', value: `${history.length} transaksi`, color: '#3b82f6' }, { label: 'Rata-rata / Transaksi', value: fmt(history.length ? Math.round(totalToday / history.length) : 0), color: '#10b981' }].map((s, i) => <div key={i} style={{ flex: '1 1 160px', background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 12, padding: '14px 16px' }}><p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: 'var(--color-muted-fg)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{s.label}</p><p style={{ margin: '6px 0 0', fontSize: 18, fontWeight: 800, color: s.color }}>{s.value}</p></div>)}
       </div>
-
       <div style={{ background: 'var(--color-card)', border: '1px solid var(--color-border)', borderRadius: 16, overflow: 'hidden' }}>
-        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--color-border)' }}>
-          <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--color-foreground)' }}>Riwayat Transaksi Penjualan</h3>
-        </div>
-        {loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}><Spinner size={24} /></div>
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--color-border)' }}>
-                  {['No. Invoice', 'Waktu', 'Pelanggan', 'Item', 'Metode', 'Total', 'Struk'].map(h => (
-                    <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--color-muted-fg)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {history.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--color-muted-fg)' }}>
-                      Belum ada riwayat transaksi penjualan
-                    </td>
-                  </tr>
-                ) : history.map(tx => {
-                  const dateVal = tx.created_at || tx.sold_at || Date.now();
-                  const time = new Date(dateVal).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                  const mc = METHOD_COLOR[tx.payment_method] || '#94a3b8';
-                  const totalAmt = Number(tx.grand_total || tx.total_amount) || 0;
-                  const invoiceNo = tx.invoice_number || `INV-${tx.id}`;
-                  const itemCount = tx.items_count || (tx.items ? tx.items.length : 1);
-
-                  return (
-                    <tr key={tx.id} style={{ borderBottom: '1px solid var(--color-border)' }}
-                      onMouseEnter={e => e.currentTarget.style.background = 'var(--color-muted)'}
-                      onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                    >
-                      <td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600, color: 'var(--color-foreground)', fontFamily: 'var(--font-mono)' }}>{invoiceNo}</td>
-                      <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--color-muted-fg)' }}>{time}</td>
-                      <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--color-foreground)' }}>{tx.customer?.name || 'Pelanggan Umum'}</td>
-                      <td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--color-muted-fg)' }}>{itemCount} item</td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <span style={{ padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, background: `color-mix(in srgb, ${mc} 15%, transparent)`, color: mc }}>{tx.payment_method || 'Tunai'}</span>
-                      </td>
-                      <td style={{ padding: '12px 14px', fontSize: 14, fontWeight: 700, color: 'var(--color-foreground)', whiteSpace: 'nowrap' }}>{fmt(totalAmt)}</td>
-                      <td style={{ padding: '12px 14px' }}>
-                        <button onClick={() => setReceiptTx({ ...tx, customer_name: tx.customer?.name })} style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid var(--color-border)', background: 'none', cursor: 'pointer', color: 'var(--color-foreground)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}>
-                          <Icon name="receipt" size={13} /> Lihat
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
+        <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--color-border)' }}><h3 style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--color-foreground)' }}>Riwayat Transaksi Penjualan</h3></div>
+        {loading ? <div style={{ display: 'flex', justifyContent: 'center', padding: 32 }}><Spinner size={24} /></div> : <div style={{ overflowX: 'auto' }}><table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 560 }}><thead><tr style={{ borderBottom: '2px solid var(--color-border)' }}>{['No. Invoice', 'Waktu', 'Pelanggan', 'Item', 'Metode', 'Total', 'Struk'].map(h => <th key={h} style={{ padding: '11px 14px', textAlign: 'left', fontSize: 11, fontWeight: 700, color: 'var(--color-muted-fg)', textTransform: 'uppercase', letterSpacing: '0.06em', whiteSpace: 'nowrap' }}>{h}</th>)}</tr></thead><tbody>{history.length === 0 ? <tr><td colSpan={7} style={{ padding: 32, textAlign: 'center', color: 'var(--color-muted-fg)' }}>Belum ada riwayat transaksi penjualan</td></tr> : history.map(tx => { const dateVal = tx.created_at || tx.sold_at || Date.now(); const time = new Date(dateVal).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); const mc = METHOD_COLOR[tx.payment_method] || '#94a3b8'; const totalAmt = Number(tx.grand_total || tx.total_amount) || 0; const invoiceNo = tx.invoice_number || `INV-${tx.id}`; const itemCount = tx.items_count || (tx.items ? tx.items.length : 1); return <tr key={tx.id} style={{ borderBottom: '1px solid var(--color-border)' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--color-muted)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}><td style={{ padding: '12px 14px', fontSize: 13, fontWeight: 600, color: 'var(--color-foreground)', fontFamily: 'var(--font-mono)' }}>{invoiceNo}</td><td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--color-muted-fg)' }}>{time}</td><td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--color-foreground)' }}>{tx.customer?.name || 'Pelanggan Umum'}</td><td style={{ padding: '12px 14px', fontSize: 13, color: 'var(--color-muted-fg)' }}>{itemCount} item</td><td style={{ padding: '12px 14px' }}><span style={{ padding: '3px 8px', borderRadius: 6, fontSize: 11, fontWeight: 700, background: `color-mix(in srgb, ${mc} 15%, transparent)`, color: mc }}>{tx.payment_method || 'Tunai'}</span></td><td style={{ padding: '12px 14px', fontSize: 14, fontWeight: 700, color: 'var(--color-foreground)', whiteSpace: 'nowrap' }}>{fmt(totalAmt)}</td><td style={{ padding: '12px 14px' }}><button onClick={() => setReceiptTx({ ...tx, customer_name: tx.customer?.name })} style={{ padding: '5px 10px', borderRadius: 7, border: '1px solid var(--color-border)', background: 'none', cursor: 'pointer', color: 'var(--color-foreground)', display: 'flex', alignItems: 'center', gap: 4, fontSize: 12 }}><Icon name="receipt" size={13} /> Lihat</button></td></tr>; })}</tbody></table></div>}
       </div>
-
       {receiptTx && <ReceiptModal tx={receiptTx} onClose={() => setReceiptTx(null)} />}
     </div>
   );
 }
 
-// ── Main Export ────────────────────────────────────────────────
 export default function SalesPage() {
   const [tab, setTab] = useState('pos');
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const { addToast } = useToast();
 
   const fetchProducts = async () => {
@@ -404,19 +329,16 @@ export default function SalesPage() {
     }
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  useEffect(() => { fetchProducts(); }, []);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 1280, margin: '0 auto', width: '100%' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 1280, margin: '0 auto', width: '100%', paddingInline: 'clamp(0px, 2vw, 8px)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 800, color: 'var(--color-foreground)', letterSpacing: '-0.02em' }}>Penjualan &amp; Kasir</h1>
           <p style={{ margin: '4px 0 0', fontSize: '0.875rem', color: 'var(--color-muted-fg)' }}>Catat transaksi baru atau lihat riwayat penjualan hari ini.</p>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
+        <div style={{ display: 'flex', gap: 8, width: '100%', maxWidth: 360, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
           {[{ id: 'pos', label: 'Kasir / POS', icon: 'cart' }, { id: 'history', label: 'Riwayat', icon: 'list' }].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)} style={{ display: 'flex', alignItems: 'center', gap: 7, padding: '9px 16px', borderRadius: 10, border: '1px solid', borderColor: tab === t.id ? 'var(--color-primary)' : 'var(--color-border)', background: tab === t.id ? 'color-mix(in srgb, var(--color-primary) 12%, var(--color-muted))' : 'var(--color-card)', color: tab === t.id ? 'var(--color-primary)' : 'var(--color-muted-fg)', fontWeight: tab === t.id ? 700 : 500, fontSize: 14, cursor: 'pointer' }}>
               <Icon name={t.icon} size={15} color={tab === t.id ? 'var(--color-primary)' : 'var(--color-muted-fg)'} />
@@ -427,9 +349,9 @@ export default function SalesPage() {
       </div>
 
       {tab === 'pos' ? (
-        <POSPanel products={products} loadingProducts={loadingProducts} refreshProducts={fetchProducts} />
+        <POSPanel products={products} loadingProducts={loadingProducts} refreshProducts={fetchProducts} onQrisSuccess={() => setHistoryRefreshKey(v => v + 1)} onHistoryRefresh={() => setHistoryRefreshKey(v => v + 1)} />
       ) : (
-        <HistoryPanel />
+        <HistoryPanel refreshKey={historyRefreshKey} />
       )}
     </div>
   );
